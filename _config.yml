@@ -53,7 +53,8 @@ category_dir: category/
 tag_dir: tag/
 
 # excerpt
-excerpt_separator: "\n\n\n\n"
+# 摘要判定符，该符号之前的文字会被显示为摘要，此处以连续两回车符作为摘要分隔符，即换行+空行
+excerpt_separator: "\n\n"
 
 # paginate
 plugins: [jekyll-paginate]
