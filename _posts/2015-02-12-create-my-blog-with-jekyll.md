@@ -17,6 +17,10 @@ $$
 x^{2}
 $$
 
+图片测试
+
+![](/img/494px-SVM_margin.png)
+
 ## 搭建过程
 
 在jekyll的官网上 [http://jekyllrb.com/](http://jekyllrb.com/) 其实已经说得比较明白了，我在这里还是简单的说一下吧。我用的是Windows系统。    
