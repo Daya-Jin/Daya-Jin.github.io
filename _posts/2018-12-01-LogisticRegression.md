@@ -49,7 +49,7 @@ y^{(m)} \\
 \right]
 $$
 
-假设二分类数据服从伯努利分布，类条件概率服从高斯分布：
+假设二分类数据服从伯努利分布，特征条件概率服从高斯分布：
 
 $$
 P(y=1)=\phi \\
@@ -61,13 +61,13 @@ $$
 给定一个样本，模型的输出为：
 
 $$
-\begin{align*}
+\begin{align}
 P(y=1|x)&=\frac{P(y=1)P(x|y=1)}{P(y=0)P(x|y=0)+P(y=1)P(x|y=1)} \\
 &=\frac{1}{1+\frac{P(y=0)P(x|y=0)}{P(y=1)P(x|y=1)}} \\
 &=\frac{1}{1+\frac{1-\phi}{\phi}exp[-\frac{(x-\mu_{0})^{2}}{2\sigma^{2}}+\frac{(x-\mu_{1})^{2}}{2\sigma^{2}}]} \\
 &=\frac{1}{1+\frac{1-\phi}{\phi}exp\frac{2(\mu_{0}-\mu_{1})x+\mu_{1}^{2}-\mu_{0}^{2}}{2\sigma^{2}}} \\
 &=\frac{1}{1+exp(\frac{\mu_{0}-\mu_{1}}{\sigma^{2}}x+\frac{\mu_{1}^{2}-\mu_{0}^{2}}{2\sigma^{2}}+\ln(\frac{1-\phi}{\phi}))}
-\end{align*}
+\end{align}
 $$
 
 令$$-a=\frac{\mu_{0}-\mu_{1}}{\sigma^{2}}$$，$$-b=\frac{\mu_{1}^{2}-\mu_{0}^{2}}{2\sigma^{2}}+\ln(\frac{1-\phi}{\phi})$$，得：

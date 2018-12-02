@@ -204,6 +204,7 @@ $$
 这两个变种都能适当弥补原始梯度下降法的缺陷。
 
 
+
 ## 正规方程
 
 线性回归的方程可写为：
@@ -240,6 +241,8 @@ $$
 
 到目前为止，上面所讲述的线性模型，我们只对数据中的噪声做了一个先验假设$$\epsilon \sim N(0, \sigma^{2})$$，那么求出来的解一定是对已有数据(观测值)的一个最优解。但是，对已有数据的最优解不一定对未知数据也是最优解，那么还需要对隐藏的真实分布$$Y=X\theta^{T}$$中的参数$$\theta$$再做一个先验假设。
 
+
+
 ## Laplace distribution
 
 令$$\theta \sim Laplace(0,\beta)$$，那么依照前文，参数$$\theta$$的似然函数为：
@@ -270,6 +273,7 @@ J(\theta,\lambda)=\frac{1}{2}\sum_{i=1}^m(y^{(i)}-\hat{y}^{(i)})^{2}+\lambda||\t
 $$
 
 此为带**L1正则**的线性回归，也称**LASSO**。
+
 
 
 ## Gaussian distribution
@@ -303,13 +307,25 @@ $$
 
 此为带**L2正则**的线性回归，也称**Ridge Regression**。
 
+
+
 ## 通用正则化
 
 考虑了L1与L2正则化后，不难推出正则化还有一种通用形式：
 $$
 J(\theta,\lambda)=\frac{1}{2}\sum\limits_{i=1}^{m}(y^{(i)}-\hat{y}^{(i)})^{2}+\lambda\sum\limits_{j=1}^{m}\theta_{j}^{p}
 $$
+对于不同的$$p$$值，其边界条件如下图所示：
 
+![](/img/2018-12-02_14-40-23.png)
+
+不过实践证明，去尝试除了$$(0,1,2)$$之外的$$p$$值并不值得，反而将$$p$$值限定在$$(1,2)$$之间能达到一个Ridge与Lasso的折中。不过还有一种方法就是同时结合Ridge与Lasso，形成一个**ElasticNet**正则项：
+$$
+J(\theta,\lambda)=\frac{1}{2}\sum\limits_{i=1}^{m}(y^{(i)}-\hat{y}^{(i)})^{2}+\lambda\sum\limits_{j=1}^{m}[\alpha\theta_{j}^{2}+(1-\alpha)|\theta_{j}|]
+$$
+下图是一个$$L_{1.2}$$与ElasticNet的边界对比：
+
+![](/img/2018-12-02_14-40-30.png)
 
 
 
@@ -345,11 +361,12 @@ $$
 \end{align*}
 $$
 
-分别对应**L0**、**L1**、**L2**正则化，其中**Lasso**和**Ridge Regression**表达式为：
+分别对应**L0**、**L1**、**L2**正则化，这三种正则化分别被称作**Subset**、**Lasso**和**Ridge**，表达式为：
 
 $$
 \begin{align*}
-&Lasso: \qquad \hat{\theta}=arg\ min(\sum_{i=1}^{m}(y^{(i)}-\hat{y}^{(i)})+\lambda\sum_{i=1}^{n}||\theta_{j}||_{2}) \\
+&Subset: \qquad \hat{\theta}=arg\ min(\sum_{i=1}^{m}(y^{(i)}-\hat{y}^{(i)})+\lambda\sum_{i=1}^{n}I(\theta_{j}\ne0)) \\
+&Lasso: \qquad \hat{\theta}=arg\ min(\sum_{i=1}^{m}(y^{(i)}-\hat{y}^{(i)})+\lambda\sum_{i=1}^{n}|\theta_{j}|) \\
 &Ridge: \qquad \hat{\theta}=arg\ min(\sum_{i=1}^{m}(y^{(i)}-\hat{y}^{(i)})+\lambda\sqrt{\sum_{i=1}^{n}\theta_{j}^{2}}) \\
 \end{align*}
 $$
