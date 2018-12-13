@@ -2,7 +2,7 @@
 layout: post
 title:  "Decision Tree"
 categories: MachineLearning
-tags: decision tree
+tags: tree
 ---
 
 * content
