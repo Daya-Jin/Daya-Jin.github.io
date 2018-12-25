@@ -170,6 +170,25 @@ $$
 Loss(\theta)=\sum_{i}[-y*x\theta^{T}+ln(1+e^{x\theta^{T}})]
 $$
 
+对于logistic regression，同样可以使用梯度下降法来优化参数$$\theta$$。注意sigmoid函数的导数：
+$$
+\begin{align}
+\frac{\partial{\sigma(x)}}{\partial{x}}&=\frac{-1}{(1+e^{-x})^{2}}\cdot(-e^{-x}) \\
+&=\frac{1}{1+e^{-x}}\cdot\frac{e^{-x}+1-1}{1+e^{-x}} \\
+&=\frac{1}{1+e^{-x}}\cdot(1-\frac{1}{1+e^{-x}}) \\
+&=\sigma(x)\cdot(1-\sigma(x)) \\
+\end{align}
+$$
+那么在标量形式下，易推得损失函数关于参数$$\theta​$$的梯度为：
+$$
+\begin{align*}
+\frac{\partial{L}}{\partial{\theta}}&=-\frac{y}{\hat{y}}{\cdot}\frac{\partial{\hat{y}}}{\partial{\theta}}+\frac{1-y}{1-\hat{y}}\cdot{\frac{\partial{\hat{y}}}{\partial\theta}} \\
+&=-\frac{y}{\hat{y}}{\cdot}\hat{y}(1-\hat{y}){\cdot{x}}+\frac{1-y}{1-\hat{y}}{\cdot}\hat{y}(1-\hat{y}){\cdot}x \\
+&=(\hat{y}-y)x
+\end{align*}
+$$
+注意到logistic regression的梯度形式与linear regression是一样的，唯一的区别就在于$$\hat{y}$$的不同。
+
 ## 决策边界
 
 由于Logistic Regression的输出是一个$$p(\hat{y}=1)$$的概率，那么对于二分类任务，模型对某一样本做出判别的依据就是一个概率阈值。假如概率阈值为0.5，则当模型输出$$f(x)>0.5$$时判为正样本，而当模型输出$$f(x)<0.5$$时判为负样本，此时模型的决策边界是啥呢？
