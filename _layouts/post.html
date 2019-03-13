@@ -66,8 +66,11 @@ layout: default
 
         {% include previousAndNext.html %}
 
+        <!--失效的评论组件-->
+        {% comment %} 
         <h2 id="comments">Comments</h2>
-        {% include comments.html %}
+        {% include comments.html %} 
+        {% endcomment %}
 
 
     </div>

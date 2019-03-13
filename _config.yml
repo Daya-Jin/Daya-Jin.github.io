@@ -28,15 +28,15 @@ description_footer: Welcome
 # comments
 # two ways to comment, only choose one, and use your own short name
 # 两种评论插件，选一个就好了，使用自己的 short_name
-duoshuo_shortname: #hygblog
-disqus_shortname: #gaohaoyang
+# duoshuo_shortname: #hygblog
+# disqus_shortname: #gaohaoyang
 
 # statistic analysis 统计代码
 # 百度统计 id，将统计代码替换为自己的百度统计id，即
 # hm.src = "//hm.baidu.com/hm.js?xxxxxxxxxxxx";
 # xxxxx字符串
-baidu_tongji_id: ad0eb959aa0d380b1fd01c73f0e20a3f
-google_analytics_id: UA-130247175-1 # google 分析追踪id
+# baidu_tongji_id: ad0eb959aa0d380b1fd01c73f0e20a3f
+# google_analytics_id: UA-130247175-1 # google 分析追踪id
 
 # Build settings
 markdown: kramdown
@@ -58,5 +58,5 @@ excerpt_separator: "\n\n"
 
 # paginate
 plugins: [jekyll-paginate]
-paginate: 6           # 每页文章数
-port: 4001
+paginate: 10           # 每页文章数
+port: 4000
