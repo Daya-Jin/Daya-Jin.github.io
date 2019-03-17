@@ -2,7 +2,7 @@
 layout: post
 title:  "K-Nearest-Neighbor"
 categories: MachineLearning
-tags: clustering NearestNeighbor
+tags: NearestNeighbor
 ---
 
 * content
