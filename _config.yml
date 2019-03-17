@@ -45,6 +45,8 @@ kramdown:
   input: GFM
   syntax_highlighter: rouge
 
+# mathjax: true
+
 # port
 # port: 1234
 
