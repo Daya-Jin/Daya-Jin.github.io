@@ -134,13 +134,16 @@ f(x):=f(x)+{\beta}b(x)
 $$
 
 仅仅受表达形式上的启发，就可以很容易想到：把模型$$f(x)$$当做需要优化的参数，令每一轮的新模型$$b(x)$$去拟合负梯度，那么就可以借鉴梯度下降法的思想来得到一个最优或次优模型，由此引出**梯度提升机**(Gradient Boosting Machine)的概念。增量boosting模型在第$$m$$轮时的损失可以写成：
+
 $$
 \begin{align}
 \sum_{i=1}^{N}L(y_{i},f_{m}(x_{i}))&=\sum_{i=1}^{N}L(y_{i},f_{m-1}(x_{i})+\beta_{m}b_{m}(x_{i};\theta_{m})) \\
 &=\sum\limits_{i=1}^{N}L(y_{i},f_{m-1}(x_{i}))+\beta_{m}\sum\limits_{i=1}^{N}g_{i,m}b_{m}(x_{i};\theta_{m}) \\
 \end{align}
 $$
+
 其中$$g_{i,m}=\frac{\partial L(y_{i},f_{m-1}(x_{i}))}{\partial f_{m-1}(x_{i})}$$，$$L(y_{i},f_{m-1}(x_{i}))$$称为伪残差。在上式中，$$\sum_{i=1}^{N}L(y_{i},f_{m-1}(x_{i}))$$是常数，要想最小化$$\sum_{i=1}^{N}L(y_{i},f_{m}(x_{i}))$$，易得$$b_{m}(x_{i};\theta_{m})$$必须要跟$$g_{i,m}$$异号，这样才能修正上一轮的错误以减小损失值。受上面梯度下降法的启发，令：
+
 $$
 b_{m}(x_{i};\theta_{m})=-g_{i,m}
 $$
