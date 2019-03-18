@@ -6,11 +6,9 @@ layout: default
     <div class="left">
         <h1>{{page.title}}</h1>
         <div class="label">
-
             <div class="label-card">
                 <i class="fa fa-calendar"></i>{{ page.date | date: "%F" }}
             </div>
-
             <div class="label-card">
                 {% if page.author %}<i class="fa fa-user"></i>{{ page.author }}
                 {% endif %}
@@ -29,14 +27,12 @@ layout: default
             <div class="label-card">
             {% include tag.html %}
             </div>
-
         </div>
         <hr>
         <article itemscope itemtype="http://schema.org/BlogPosting">
         {{content}}
         </article>
         <hr>
-
         {% assign hasSimilar = '' %}
         {% for post in site.related_posts %}
             {% assign postHasSimilar = false %}
@@ -63,16 +59,12 @@ layout: default
         {% if hasSimilar.size > 0 %}
             </ul>
         {% endif %}
-
         {% include previousAndNext.html %}
-
         <!--失效的评论组件-->
         {% comment %} 
         <h2 id="comments">Comments</h2>
         {% include comments.html %} 
         {% endcomment %}
-
-
     </div>
     <button class="anchor"><i class="fa fa-anchor"></i></button>
     <div class="right">
