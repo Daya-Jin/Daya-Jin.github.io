@@ -171,6 +171,7 @@ Loss(\theta)=\sum_{i}[-y*x\theta^{T}+ln(1+e^{x\theta^{T}})]
 $$
 
 对于logistic regression，同样可以使用梯度下降法来优化参数$$\theta$$。注意sigmoid函数的导数：
+
 $$
 \begin{align}
 \frac{\partial{\sigma(x)}}{\partial{x}}&=\frac{-1}{(1+e^{-x})^{2}}\cdot(-e^{-x}) \\
@@ -179,7 +180,9 @@ $$
 &=\sigma(x)\cdot(1-\sigma(x)) \\
 \end{align}
 $$
+
 那么在标量形式下，易推得损失函数关于参数$$\theta​$$的梯度为：
+
 $$
 \begin{align*}
 \frac{\partial{L}}{\partial{\theta}}&=-\frac{y}{\hat{y}}{\cdot}\frac{\partial{\hat{y}}}{\partial{\theta}}+\frac{1-y}{1-\hat{y}}\cdot{\frac{\partial{\hat{y}}}{\partial\theta}} \\
@@ -187,6 +190,7 @@ $$
 &=(\hat{y}-y)x
 \end{align*}
 $$
+
 注意到logistic regression的梯度形式与linear regression是一样的，唯一的区别就在于$$\hat{y}$$的不同。
 
 ## 决策边界
