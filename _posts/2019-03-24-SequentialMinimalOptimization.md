@@ -107,3 +107,5 @@ $$
     (\theta_{0,a}+\theta_{0,b})/2 & \text{otherwise} \\
 \end{cases}
 $$
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/svm/SMO.ipynb)

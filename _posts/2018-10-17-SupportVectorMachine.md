@@ -328,6 +328,7 @@ s.t. \ & 0\le\lambda_{i}\le{C}, \  \sum\limits\lambda_{i}y^{i}=0
 \end{aligned}
 $$
 
+SVM的具体优化算法请参阅SMO一章，实现指导也在那一章。这里只放出完整代码：[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/svm/SVC.py)
 
 ## SVR
 

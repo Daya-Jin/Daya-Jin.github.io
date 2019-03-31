@@ -22,6 +22,8 @@ $$
 acc=\frac{1}{n}\sum\limits_{i=1}^{n}I(y^{(i)}=\hat{y}^{(i)})
 $$
 
+[代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/metrics/accuracy_score.py)
+
 ## Log-loss
 
 对于二分类任务，特别是在logistic regression中，由最大似然法可以得出一个交叉熵损失函数：
@@ -31,6 +33,8 @@ loss=-\sum\limits_{i}^{n}[y^{(i)}\ln(\hat{y}^{(i)})+(1-y^{(i)})\ln(1-\hat{y}^{(i
 $$
 
 当然，作为损失函数，该值应该是越小越好。
+
+[代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/metrics/log_loss.py)
 
 ## Precision
 
@@ -72,6 +76,8 @@ $$
 - macro-F1: 分别计算所有类别下的F1分数，然后再计算平均F1分数
 - weighted-F1: 分别计算所有类别下的F1分数，然后根据类分布概率计算加权平均F1分数
 
+[代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/metrics/f1_score.py)
+
 ## ROC
 
 **受试者工作特征曲线**(Receiver Operating Characteristic curve)，可用于评估二分类模型。首先明确几个概念：
@@ -96,6 +102,10 @@ AUC=P(P_{pos}>P_{neg})=\frac{\sum\limits_{i{\in}pos}reversed\_rank_{i}-\frac{M(M
 $$
 
 其中$reversed\_rank_{i}$为逆序rank值，只是为了书写简便。
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/metrics/AUC.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/metrics/accuracy_score.py)
 
 # Clustering
 

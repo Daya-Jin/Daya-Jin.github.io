@@ -43,6 +43,10 @@ Bagging算法中模型的个数$B$不是一个很重要的参数，因为$B$在�
 
 假定训练集$X$有$n$个特征$Z_{1}$、$Z_{2}$、……、$Z_{n}$，经过$B$轮有放回的抽样得到$B$个训练子集$[X_{1}, X_{2}, ..., X_{B}]$，同样在这$B$个训练集上训练$B$个树模型$[f_{1}(x), f_{2}(x), ..., f_{B}(x)]$，Random Forest与Bagging唯一的不同就在于每个树模型的训练过程。bagging在每棵树生成时会在当前样本子集所有特征中找一个最佳分割点进行分裂，而random forest在每次分裂时只会随机选取一个特征子集做分裂，随机选取的特征子集大小一般为$p=\sqrt{n}$。
 
+实现指导：[分类](https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestClassifier.ipynb) &ensp; [回归](https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestRegressor.ipynb)
+
+完整代码：[分类](https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestClassifier.py) &ensp; [回归](https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestRegressor.py)
+
 ## Boosting
 
 不同于bagging，boosting算法是一种串行修正算法，在同一个训练集上串行训练多个模型，每一个模型会针对上一个模型的错误进行修正。下面首先以二分类的AdaBoost做示例讲解。
@@ -66,6 +70,10 @@ $$
 在第3步计算模型权重时，注意到当$$err=\frac{1}{2}$$(随机猜)时$$\alpha=0$$，当$$err>\frac{1}{2}$$时$$\alpha<0$$，当$$err<\frac{1}{2}$$时$$\alpha>0$$，即对那些好于随机猜的模型会赋予一个正权重，而对那些还不如随机猜的模型赋予一个负权重；
 
 另一个，在对样本重新分配权重时，注意到当$$\alpha_{1}{\cdot}I(y_{i}{\ne}f_{1}(x_{i}))>0$$时，样本的权重才会增大，反之会减小，而等于零时则权重不变。且注意到AdaBoost只会改变被误分类样本的权重，而在需要改变权重$$I(y_{i}{\ne}f_{1}(x_{i}))=1$$的条件下，样本权重的更改量只取决于模型权重$$\alpha$$，而模型权重$$\alpha$$又取决于模型的分类误差$$err$$，所以可以看出：减小那些被$$err>\frac{1}{2}$$模型误分类样本的权重，增大那些被$$err<\frac{1}{2}$$模型误分类样本的权重。
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/AdaBoostClassifier.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/AdaBoostClassifier.py)
 
 **增量Boosting**
 

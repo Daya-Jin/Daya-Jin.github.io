@@ -164,3 +164,7 @@ S_{w}^{-1}S_{b}a-{\lambda}a=0 \\
 $$
 
 可以看到这就是一个特征值问题。
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/discriminant_analysis/LinearDiscriminantAnalysis.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/discriminant_analysis/LinearDiscriminantAnalysis.py)

@@ -65,6 +65,10 @@ $$
 
 在只考虑信息增益的情况下，ID3算法有一个致命缺陷，就是会倾向于选择类别数多的特征来做划分。假设有一列特征(如样本ID)类别数与样本数相等，如果以该特征来进行划分数据集，则数据集被划分成了单样本节点，每个节点的熵均为0，总熵也为0，这样一来得到了最大的信息增益，但是这种划分显然是不合理的。
 
+实现指导：[分类](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/ID3_Clf.ipynb) &ensp; [回归](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/ID3_Reg.ipynb)
+
+完整代码：[分类](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/ID3_Clf.py) &ensp; [回归](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/ID3_Reg.py)
+
 ## C4.5
 
 为了修正ID3算法的缺陷，C4.5算法应运而生。
@@ -137,6 +141,10 @@ $$
 (A_{opt},a_{opt})=arg\ min(G(D|A_{i}=a_{j})) \qquad i\ from\ 1 \to M,j\ from\ 1\to V
 $$
 
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/DecisionTreeClassifier.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/DecisionTreeClassifier.py)
+
 **回归**
 
 首先需要说明的是回归树的输出是叶子结点中所有样本目标值的均值。那么对于回归任务，怎么去生成树？可以采用一种直观的方式来对数据集进行划分，假设某一时刻数据集(数据子集)$$D$$被决策树以特征$$X_{j}$$按取值$$s$$划分成了两部分(或两个叶子节点)：
@@ -161,6 +169,10 @@ $$
 CART同样使用剪枝来避免过拟合。
 
 **注意：**能做回归任务并不是CART树的专利，ID3与C4.5都可以用于回归！
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/DecisionTreeRegressor.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/tree/DecisionTreeRegressor.py)
 
 ## 树的正则化
 
@@ -197,18 +209,15 @@ $$
 假设某一时刻以节点$$t$$进行剪枝，那么剪枝后与剪枝前的CC函数差为：
 
 $$
-\begin{align*}
+\begin{aligned}
 \Delta C_{\alpha}(t)&=C_{\alpha}(T-T_{t})-C_{\alpha}(T) \\
 &=Err(T-T_{t})-Err(T)+\alpha(|T-T_{t}|-|T|) \\
 &=(-Err(T_{t})+err(t))+\alpha(-|T_{t}|+1) \\
 &=err(t)-Err(T_{t})+\alpha(1-|T_{t}|) \\
-\end{align*}
+\end{aligned}
 $$
 
-其中，
-$$T_{t}$$为树
-$$T$$中以节点
-$$t$$为根节点的子树。令$$\Delta C_{\alpha}(t)=0$$得$$g(t)=\alpha'=\frac{err(t)-Err(T_{t})}{|T_{t}-1|}$$，整个CCP算法流程如下所述：
+其中，$T_{t}$为树$T$中以节点$t$为根节点的子树。令$$\Delta C_{\alpha}(t)=0$$得$$g(t)=\alpha'=\frac{err(t)-Err(T_{t})}{|T_{t}-1|}$$，整个CCP算法流程如下所述：
 
 1. 生成一颗完整树$$T^{0}$$，对所有的非叶节点都进行剪枝尝试，找到一个最小化$$g(t_{1})$$的剪枝节点$$t_{1}$$，令$$\alpha^{1}=g(t_{1})$$，$$T^{1}=T^{0}-T_{t_{1}}$$
 

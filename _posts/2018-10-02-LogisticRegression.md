@@ -205,6 +205,10 @@ $$
 
 当然，决策边界会根据自定义阈值而改变；除此之外，logistic regression也可以设置为输出连续的概率值。
 
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/linear_model/LogisticRegression.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/linear_model/LogisticRegression.py)
+
 # 后记
 
 logistic regression本质上还是属于linear model的一种，那么linear model所具有的优点，logistic regression也是有的；对于缺点也同样成立。

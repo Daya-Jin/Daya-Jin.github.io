@@ -99,3 +99,7 @@ $$
     \Sigma_{k}&=\frac{1}{N_{k}}\sum\limits_{i=1}^{N}P(c_{k}|x_{i})(x_{i}-\mu_{k})^{T}(x_{i}-\mu_{k}) \\
 \end{aligned}
 $$
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/mixture/GaussianMixture.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/mixture/GaussianMixture.py)

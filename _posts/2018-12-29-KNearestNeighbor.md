@@ -17,3 +17,9 @@ tags: NearestNeighbor
 ![](/img/2018-12-29_18-37-44.png)
 
 图中黑点是需要预测的的点，长条区域表示的是只考虑$$y$$轴距离的5个最近领样本，圆形区域表示的是考虑所有维度距离的5个最近领样本；前者正确分类，后者反而造成了误分类。要减缓这种问题也很简单，将$$x$$轴的尺度放大或者将$$y$$轴的尺度缩小即可。一般来说，我们会拉伸类分布概率变化不是很剧烈的那个轴。如上图的例子，$$x$$轴上的类分布概率是一个形如符号函数的分布，而在$$y$$轴上的类分布概率则是随机的，那我们就拉伸$$x$$轴。
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/neighbors/KNN.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/neighbors/KNeighborsClassifier.py)
+
+KNN算法其实很简单，没什么好讲的，唯一值的一提的就是可优化的地方，用K-D树可以减少该算法的计算复杂度。

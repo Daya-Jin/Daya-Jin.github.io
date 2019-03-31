@@ -10,7 +10,7 @@ tags: LR
 
 # 模型概述
 
-假定有一组数据$$X$$与$$Y$$，其中
+假定有一组数据$X$与$Y$，其中
 
 $$
 X=
@@ -49,14 +49,14 @@ y^{(m)} \\
 \right]
 $$
 
-$$y^{i}$$为连续型数值，如果需要使用$$x^{i}$$的值来拟合$$y^{i}$$，最简单的模型就是如下形式的线性模型：
+$y^{i}$为连续型数值，如果需要使用$x^{i}$的值来拟合$y^{i}$，最简单的模型就是如下形式的线性模型：
 
 $$
-\begin{align*}
+\begin{aligned}
 \hat{y}^{(i)}
  &= \theta_{0}+\theta_{1}x^{(i)}_{1}+...+\theta_{n}x^{(i)}_{n} \\
  &= x^{(i)}\theta^{T} \\
-\end{align*}
+\end{aligned}
 $$
 
 当我们使用一个线性模型去拟合数据时，我们就默认假定了$$y^{i}$$是服从线性分布的，再引入一个随机误差项，可得真实数据值得表达式为：
@@ -76,11 +76,11 @@ $$
 那么，对于参数$$\theta$$的似然函数为：
 
 $$
-\begin{align*}
+\begin{aligned}
 L(\theta)
  &= \prod_{i=1}^m p(y^{(i)}|x^{(i)};\theta) \\
  &= \prod_{i=1}^m \frac{1}{\sqrt{2\pi}\sigma}exp(-\frac{(y^{(i)}-\hat{y}^{(i)})^{2}}{2\sigma^{2}})  \\
-\end{align*}
+\end{aligned}
 $$
 
 其对数似然函数为：
@@ -203,7 +203,9 @@ $$
 
 这两个变种都能适当弥补原始梯度下降法的缺陷。
 
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/linear_model/LinearRegression.ipynb)
 
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/linear_model/LinearRegression.py)
 
 ## 正规方程
 

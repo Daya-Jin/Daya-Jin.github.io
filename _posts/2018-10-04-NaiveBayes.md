@@ -83,3 +83,8 @@ $$P(x_{i}^{D}=x_{i}|Y=c_{j})=0$$，则不管该样本的其他属性如何，模
    原概率计算公式为
    $$P(Y=c_{k})=\frac{|D_{c_{k}}|}{|D|}$$，
    $$P(x_{i}^{D}=x_{i}|Y=c_{k})=\frac{|D_{c_{k},x_{i}}|}{|D_{c_{k}}|}$$，经拉普拉斯修正后的概率计算公式为$$\hat{P}(Y=c_{k})=\frac{|D_{c_{k}}|+1}{|D|+N}$$，$$\hat{P}(x_{i}^{D}=x_{i}|Y=c_{k})=\frac{|D_{c_{k},x_{i}}|+1}{|D_{c_{k}}|+N_{i}}$$，其中$$N$$为数据集的类别数，$$N_{i}$$为第$$i$$个特征的可能取值数。
+
+
+[实现指导](https://github.com/Daya-Jin/ML_for_learner/blob/master/naive_bayes/Gaussian%20Naive%20Bayes.ipynb)
+
+[完整代码](https://github.com/Daya-Jin/ML_for_learner/blob/master/naive_bayes/GaussianNB.py)
