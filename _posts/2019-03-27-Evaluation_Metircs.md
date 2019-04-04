@@ -2,7 +2,7 @@
 layout: post
 title:  "Evaluation Metrics"
 categories: evaluation
-tags: mdoel eval metric
+tags: model eval metric
 ---
 
 * content
