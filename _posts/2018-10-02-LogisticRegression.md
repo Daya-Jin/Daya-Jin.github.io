@@ -170,7 +170,7 @@ $$
 Loss(\theta)=\sum_{i}[-y*x\theta^{T}+ln(1+e^{x\theta^{T}})]
 $$
 
-对于logistic regression，同样可以使用梯度下降法来优化参数$$\theta$$。注意sigmoid函数的导数：
+对于logistic regression，同样可以使用梯度下降法来优化参数$\theta$。注意sigmoid函数的导数：
 
 $$
 \begin{aligned}
@@ -181,7 +181,7 @@ $$
 \end{aligned}
 $$
 
-那么在标量形式下，易推得损失函数关于参数$$\theta​$$的梯度为：
+那么在标量形式下，易推得损失函数关于参数$\theta​$的梯度为：
 
 $$
 \begin{aligned}
