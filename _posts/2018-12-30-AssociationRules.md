@@ -7,6 +7,7 @@ tags: RecommendSystem
 
 * content
 {:toc}
+
 ## 概述
 
 在商场的购物数据中，常常可以看到多种物品同时出现，这背后隐藏着联合销售或打包销售的商机。**关联规则分析**(Association Rule Analysis)就是为了发掘购物数据背后的商机而诞生的。
