@@ -221,3 +221,14 @@ logistic regression还有一个被讨论的点就是关于高维稀疏特征的�
 2. 另外，线性模型计算简单，在高维特征下的速度也是可以接受的；
 3. 线性模型的正则化是对各个特征的权重做惩罚，不会在某一特征上产生过拟合；
 4. 最后，对特征的离散化，会增强模型对于更细粒度特征的学习能力。
+
+注意到由对数似然得到的logistic regression损失函数可以写成：
+
+$$
+\begin{aligned}
+    Loss&=-\sum_{i}[y\ln(\hat{y})+(1-y)\ln(1-\hat{y})] \\
+    &=\sum_{i}[y\ln\frac{1}{\hat{y}}+(1-y)\ln\frac{1}{1-\hat{y}}] \\
+\end{aligned}
+$$
+
+在信息论中，$H(P,Q)=\sum\limits_{i}P(i)\log\frac{1}{Q(i)}$称为交叉熵，其中$P$为真实分布，$Q$为非真实分布，交叉熵可用于衡量两个分布之间的差异性。不难发现，logistic regression的损失函数实际上就是一个交叉熵。
