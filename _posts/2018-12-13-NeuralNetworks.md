@@ -110,4 +110,4 @@ $$
 
 [原博客的Python实现指导](https://blog.csdn.net/qq_31823267/article/details/78044065)
 
-[tensorflow实现指导]()
+[tensorflow实现指导](https://github.com/Daya-Jin/DL_for_learner/blob/master/DNN/DNN.ipynb)
