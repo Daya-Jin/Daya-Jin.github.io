@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "NeuralNetworks(need fix)"
+title:  "Neural Networks"
 categories: DeepLearning
 tags: DeepLearning
 ---
@@ -79,14 +79,14 @@ $$
 
 $$
 \begin{aligned}
-    {\Delta}a^{[2]}&=\frac{{\partial}L}{{\partial}a^{[2]}} \\
+    {\Delta}a^{[2]}&=\frac{\partial{L}}{\partial{a^{[2]}}} \\
     &=-\frac{y}{a^{[2]}}+\frac{1-y}{1-a^{[2]}} \\
-    {\Delta}z^{[2]}&={\Delta}a^{[2]}\cdot\frac{{\partial}a^{[2]}}{{\partial}z^{[2]}} \\
+    {\Delta}z^{[2]}&={\Delta}a^{[2]}\cdot\frac{\partial{a^{[2]}}}{\partial{z^{[2]}}} \\
     &={\Delta}a^{[2]}{\cdot}a^{[2]}(1-a^{[2]}) \\
     &=a^{[2]}-y \\
-    {\Delta}\theta^{[1]}&={\Delta}z^{[2]}\cdot\frac{{\partial}z^{[2]}}{{\partial}\theta^{[1]}} \\
+    {\Delta}\theta^{[1]}&={\Delta}z^{[2]}\cdot\frac{\partial{z^{[2]}}}{\partial\theta^{[1]}} \\
     &={\Delta}z^{[2]}{\cdot}a^{[1]} \\
-    {\Delta}b^{[1]}&={\Delta}z^{[2]}\cdot\frac{{\partial}z^{[2]}}{{\partial}b^{[1]}} \\
+    {\Delta}b^{[1]}&={\Delta}z^{[2]}\cdot\frac{\partial{z^{[2]}}}{\partial{b^{[1]}}} \\
     &={\Delta}z^{[2]} \\
 \end{aligned}
 $$
@@ -95,13 +95,13 @@ $$
 
 $$
 \begin{aligned}
-    {\Delta}a^{[1]}&={\Delta}z^{[2]}\cdot\frac{{\partial}z^{[2]}}{{\partial}a^{[1]}} \\
+    {\Delta}a^{[1]}&={\Delta}z^{[2]}\cdot\frac{\partial{z^{[2]}}}{\partial{a^{[1]}}} \\
     &={\Delta}z^{[2]}\cdot\theta^{[1]} \\
-    {\Delta}z^{[1]}&={\Delta}a^{[1]}\cdot\frac{{\partial}a^{[1]}}{{\partial}z^{[1]}} \\
+    {\Delta}z^{[1]}&={\Delta}a^{[1]}\cdot\frac{\partial{a^{[1]}}}{\partial{z^{[1]}}} \\
     &={\Delta}z^{[2]}\cdot\theta^{[1]}{\cdot}a^{[1]}(1-a^{[1]}) \\
-    {\Delta}\theta^{[0]}&={\Delta}z^{[1]}\cdot\frac{{\partial}z^{[1]}}{{\partial}\theta^{[0]}} \\
+    {\Delta}\theta^{[0]}&={\Delta}z^{[1]}\cdot\frac{\partial{z^{[1]}}}{\partial\theta^{[0]}} \\
     &={\Delta}z^{[1]}{\cdot}a^{[0]} \\
-    {\Delta}b^{[0]}&={\Delta}z^{[1]}\cdot\frac{{\partial}z^{[1]}}{{\partial}b^{[0]}} \\
+    {\Delta}b^{[0]}&={\Delta}z^{[1]}\cdot\frac{\partial{z^{[1]}}}{\partial{b^{[0]}}} \\
     &={\Delta}z^{[1]}
 \end{aligned}
 $$
