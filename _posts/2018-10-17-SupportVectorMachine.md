@@ -120,7 +120,7 @@ $$
 x^{*},\lambda^{*}=\arg\min\limits_{x}\max\limits_{\lambda}L(x,\lambda)
 $$
 
-拉格朗日问题还有一个对偶问题：
+在解优化问题时，如果目标函数是凸函数，那么就可以很容易得到一个全局最优解。拉格朗日问题还有一个对偶问题：
 
 $$
 \lambda^{*},x^{*}=\arg\max\limits_{\lambda}\min\limits_{x}L(x,\lambda)
