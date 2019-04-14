@@ -8,7 +8,7 @@ tags: DeepLearning
 * content
 {:toc}
 
-# 神经网络(残缺文章，待修正)
+# 神经网络
 
 ## 模型结构
 
