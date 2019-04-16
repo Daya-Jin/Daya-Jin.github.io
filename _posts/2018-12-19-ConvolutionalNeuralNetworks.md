@@ -137,3 +137,28 @@ VGG中只使用了两种核：
 
 ### GoogLeNet
 
+GoogLeNet是2014年ImageNet图像分类挑战的冠军，它同样扩展了AlexNet的网络深度，但不同于VGG，GoogLeNet使用了一种全新的网络子结构来减少参数与运算量。
+
+**Interception Module**
+
+Interception Module是GoogLeNet中出现的全新网络子结构，如下图所示：
+
+![](/img/nception-module-of-GoogLeNet-This-figure-is-from-the-original-paper-10.png)
+
+一个Interception Module对上一层的输出并行地做了三次基于不同卷积核的卷积运算与一次池化运算，并且引入了$1{\times}1$的卷积核来减少数据流的深度，这样就降低了参数数量与运算量。
+
+Interception Module最终会将四个运算结果沿深度轴拼接起来，那么四个运算结果的数据流深度可以不同，但是尺寸必须相同。一个Interception Module中可能的数据流尺寸如下图所示：
+
+![](/img/2019-04-16_09-38-31.bmp)
+
+注意到$1{\times}1$卷积核所在层的数据流深度，比其上一层与其下一层的数据流都要小，所以$1{\times}1$卷积核所在的层也叫做“**瓶颈层**”(bottleneck layer)。
+
+完整的GoogLeNet结构如下图所示：
+
+![](/img/1_ZFPOSAted10TPd3hBQU8iQ.png)
+
+关于GoogLeNet，值得一提的有几点：
+
+- 在最后一个Module之后有一个AveragePool层，其目的是为了替代传统的FC层，大大减少参数量，其后添加的FC层只是为了便于调优
+- 在网络中间层添加了两个额外的中间输出，目的是为了避免梯度消失；同时中间输出会以一定的权重加到最终输出上去
+
