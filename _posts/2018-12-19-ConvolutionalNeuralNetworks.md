@@ -56,7 +56,11 @@ $$
 
 其中$+1$表示的是bias。
 
+一个简单的CNN实现指导[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/mini_CNN.ipynb)。
+
 ## CNN Architectures
+
+最初始的CNN架构应该是LeNet-5，关于该网络的实现[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/LeNet-5.ipynb)。
 
 ### AlexNet
 
