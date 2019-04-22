@@ -35,3 +35,13 @@ J(\theta)=-\frac{1}{T}\sum\limits_{t=1}^{T}\sum\limits_{-m{\le}j{\le}m\atop{j{\n
 $$
 
 其中$T$为文本总长度，$m$为窗口尺寸，$w_{t}$为中心词，$w_{t+j}$为上下文。
+
+## word2vec
+
+word2vec改变了损失函数，引入负采样技术，将多分类softmax损失转成了计算二分类log损失：
+
+$$
+J(\theta)=-\frac{1}{T}\sum\limits_{t=1}^{T}\log{P_{\theta}(D=1|pair_{pos})}+\log{P_{\theta}(D=0|pair_{neg})}
+$$
+
+其中$D$代表词组对的相邻性，如果两单词具有上下文关系，即一者是另一者的中心词，则$D=1$，否则$D=0$。
