@@ -41,7 +41,7 @@ pyspark中的基础数据结构为**弹性分布式数据集**(Resilient Distrib
 - Cacheable or Persistence：可存放在内存或硬盘中
 - Partitioned：数据分布式存储在各节点中
 - Fault Tolerance：分布式产生了容错性
-- Coarse-grained Operations：RDD的操作是粗粒度的，并不是元素级的操作
+- Coarse-grained Operations：RDD的操作是粗粒度(一批一批)的，并不是元素级的操作
 
 使用序列数据构造一个rdd并查看前5个元素：
 

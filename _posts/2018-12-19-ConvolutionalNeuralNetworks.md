@@ -172,8 +172,10 @@ Interception Module最终会将四个运算结果沿深度轴拼接起来，那�
 
 ![](/img/Bottleneck-Blocks-for-ResNet-50-left-identity-shortcut-right-projection-shortcut.png)
 
-每一个残差块包含两层使用$3{\times}3$卷积核的卷积层，除此之外，残差块在激活输出之前，会将输入加到输出上，相加时会对输入再做一次卷积保证输入输出的深度相等。之前的GoogLeNet使用了$1{\times}1$的卷积核来减少参数数量与运算量，对于过深的ResNet，同样使用瓶颈层来提高模型的训练效率。完整的ResNet结构就是若干个残差块的级联，并且ResNet的性能在深度过深时不会受到影响。
+每一个残差块包含一个或两个$3{\times}3$卷积核的卷积层，除此之外，残差块在激活输出之前，会将输入加到输出上，相加时会对输入再做一次卷积保证输入输出的深度相等。之前的GoogLeNet使用了$1{\times}1$的卷积核来减少参数数量与运算量，对于过深的ResNet，同样使用瓶颈层来提高模型的训练效率。完整的ResNet结构就是若干个残差块的级联，并且ResNet的性能在深度过深时不会受到影响。原论文中给出的ResNet结构如下图所示：
 
-![](/img/1_2ns4ota94je5gSVjrpFq3A.png)
+![](/img/20180708172330149.png)
 
-注意ResNet在最后同样没有FC层，大大减少了参数数量，并且使用了与GoogLeNet相同的平均池化。
+表格中方括号括起来的表示一个残差块，论文中统一将resnet中所有的残差块分为4部分：conv2、conv3、conv4和conv5，不同配置的resnet只有每个部分包含的残差块结构不同。同时还注意到类似于VGGNet，resnet中的数据流服从一个规律：**数据尺寸逐渐减倍，数据流深度逐渐加倍**。ResNet在最后同样没有直接连接FC层，大大减少了参数数量，并且使用了与GoogLeNet相同的平均池化。
+
+一个非完整的ResNet示例[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/mini_ResNet_34.ipynb)。
