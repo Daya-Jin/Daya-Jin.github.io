@@ -139,6 +139,8 @@ VGG中只使用了两种核：
 
 根据以上表格，发现计算时的最大内存开销在于前面两层卷积层，而参数的数量绝大部分都在全连接层。以每一个数字占$32$bit来算，仅计算一张图片在VGG中的前向传播过程就至少需要$60$MB的内存，保存VGG模型的所有参数至少需要$526$MB的存储空间。
 
+一个不完整的VGG实现示例见[这里](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/3.%20mini_VGG.ipynb)。
+
 ### GoogLeNet
 
 GoogLeNet是2014年ImageNet图像分类挑战的冠军，它同样扩展了AlexNet的网络深度，但不同于VGG，GoogLeNet使用了一种全新的网络子结构来减少参数与运算量。
@@ -165,6 +167,9 @@ Interception Module最终会将四个运算结果沿深度轴拼接起来，那�
 
 - 在最后一个Module之后有一个AveragePool层，其目的是为了替代传统的FC层，大大减少参数量，其后添加的FC层只是为了便于调优
 - 在网络中间层添加了两个额外的中间输出，目的是为了避免梯度消失；同时中间输出会以一定的权重加到最终输出上去
+- Interception Module背后的思想在于，不同的操作，如不同大小的卷积或池化，它们所看到的视野域是不同的，将不同大小的卷积核或池化核并行应用于特征图，可以同时看到多种信息
+
+一个不完整的GoogLeNet实现示例见[这里](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/5.%20mini_GoogLeNet.ipynb)。
 
 ### ResNet
 
@@ -176,6 +181,65 @@ Interception Module最终会将四个运算结果沿深度轴拼接起来，那�
 
 ![](/img/20180708172330149.png)
 
-表格中方括号括起来的表示一个残差块，论文中统一将resnet中所有的残差块分为4部分：conv2、conv3、conv4和conv5，不同配置的resnet只有每个部分包含的残差块结构不同。同时还注意到类似于VGGNet，resnet中的数据流服从一个规律：**数据尺寸逐渐减倍，数据流深度逐渐加倍**。ResNet在最后同样没有直接连接FC层，大大减少了参数数量，并且使用了与GoogLeNet相同的平均池化。
+表格中方括号括起来的表示一个残差块，论文中统一将resnet中所有的残差块分为4部分：conv2、conv3、conv4和conv5，不同配置的resnet只有每个部分包含的残差块结构不同。同时还注意到类似于VGGNet，resnet中的数据流服从一个规律：**数据尺寸逐渐减倍，数据流深度逐渐加倍**。ResNet在最后同样没有直接连接FC层，大大减少了参数数量，并且使用了与GoogLeNet相同的平均池化。除此之外，还可以看到ResNet并没有使用传统的conv+pool的块结构，其分别在起始和结束处放置了一个最大池化与平均池化，中间层是不含池化层，也就是说ResNet仅使用卷积核去同时完成卷积与降采样的过程。
 
 一个非完整的ResNet示例[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/mini_ResNet_34.ipynb)。
+
+### CNN相关计算
+
+到目前为止，以上CNN架构都是在网络结构上做优化，那么现在停下来分析一下CNN中卷积操作在计算上的复杂度。首先定义几个变量，假设CNN的输入数据尺寸与中间的特征图都是正方形，那么定义输入特征图的尺寸为$(D_{I},D_{I},C_{I})$，输入特征图的尺寸为$(D_{O},D_{O},C_{O})$，卷积核的尺寸为$(D_{K},D_{K},C_{I})$，卷积核的数量为$C_{O}$。
+
+在标准卷积操作下，每一次卷积操作的计算量为：$D_{K}^{2}\times{C_{I}}$，一个卷积核的总计算量为：$D_{K}^{2}\times{C_{I}}\times{D_{O}^{2}}$，所有卷积核的总计算量为：
+
+$$
+comp=D_{K}^{2}\times{C_{I}}\times{D_{O}^{2}}\times{C_{O}}
+$$
+
+有论文尝试更改卷积运算，主要有以下两种方式。
+
+**Depthwise Separable Convolution**
+
+![](/img/2019-05-04_11-30-31.bmp)
+
+深度可分离卷积(DSC)不再对特征图的整个深度上做卷积，而是使用$C_{I}$个尺寸为$(D_{K},D_{K},1)$的卷积核分别对特征图做depthwise的卷积。不难看出DSC无法改变特征图的深度，所以这种卷积操作下有$C=C_{I}=C_{O}$。DSC的每一次卷积计算量为：$D_{K}^{2}$，一个核的总计算量为：$D_{K}^{2}\times{D_{O}^{2}}$，所有核的总计算量为$D_{K}^{2}\times{D_{O}^{2}}\times{C}$。
+
+**Pointwise Convolution**
+
+点卷积(PC)已经在之前的Googlenet与resnet中出现过了，即$1\times{1}$的卷积核，在之前的网络中用于缩小深度减少参数量。与DSC恰好相反，DSC可以改变数据流的尺寸但无法改变深度，而PC只能改变深度无法改变尺寸，所以这里有$D=D_{F}=D_{K}$。那么这里来分析一下，PC的每次卷积计算量为$C_{I}$，单个核的计算量为$C_{I}\times{D^{2}}$，总计算量为$C_{I}\times{D^{2}}\times{C_{O}}$。
+
+### MobileNet
+
+基于对卷积操作的改进，Google提出了轻量级的CNN架构——MobileNet，其可用于移动设备。其主要思想就是结合使用DSC与PC两种卷积方式，大大降低了参数量与计算量。
+
+在standard convolution操作下，计算量为：
+
+$$
+comp_{std}=D_{K}^{2}\times{C_{I}}\times{D_{O}^{2}}\times{C_{O}}
+$$
+
+级联DSC+PC时的计算量为：
+
+$$
+\begin{aligned}
+    comp_{cas}&=D_{K}^{2}\times{D_{O}^{2}}\times{C_{I}}+C_{I}\times{D_{O}^{2}}\times{C_{O}} \\
+    &=D_{O}^{2}C_{I}(D_{K}^{2}+C_{O})
+\end{aligned}
+$$
+
+计算量为之前的：
+
+$$
+\begin{aligned}
+    \frac{comp_{cas}}{comp_{std}}&=\frac{D_{O}^{2}C_{I}(D_{K}^{2}+C_{O})}{D_{K}^{2}\times{C_{I}}\times{D_{O}^{2}}\times{C_{O}}} \\
+    &=\frac{D_{K}^{2}+C_{O}}{D_{K}^{2}C_{O}} \\
+    &=\frac{1}{D_{K}^{2}}+\frac{1}{C_{O}} \\
+\end{aligned}
+$$
+
+MobileNet中级联结构(DSC+PC)的具体构成如下图所示：
+
+![](/img/2019-05-04_13-29-23.bmp)
+
+完整的网络结构如下表所示，其中```Conv dw```即级联结构。
+
+![](/img/2019-05-04_13-32-38.bmp)
