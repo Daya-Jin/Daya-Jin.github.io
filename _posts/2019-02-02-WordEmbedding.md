@@ -36,6 +36,8 @@ $$
 
 其中$T$为文本总长度，$m$为窗口尺寸，$w_{t}$为中心词，$w_{t+j}$为上下文。
 
+一个最简单的wordEmbedding示例见[这里](https://github.com/Daya-Jin/DL_for_learner/blob/master/NLP/WordEmbedding.ipynb)。
+
 ## word2vec
 
 word2vec改变了损失函数，引入负采样技术，将多分类softmax损失转成了计算二分类log损失：
@@ -45,3 +47,5 @@ J(\theta)=-\frac{1}{T}\sum\limits_{t=1}^{T}\log{P_{\theta}(D=1|pair_{pos})}+\log
 $$
 
 其中$D$代表词组对的相邻性，如果两单词具有上下文关系，即一者是另一者的中心词，则$D=1$，否则$D=0$。
+
+一个正儿八经的word2vec示例[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/NLP/word2vec.ipynb)。

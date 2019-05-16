@@ -110,5 +110,10 @@ $$
 其状态变化为：
 
 $$
-
+\begin{aligned}
+    c&:=c\times{f}+i\times{g} \\
+    h&:=o\times{tanh(c)} \\
+\end{aligned}
 $$
+
+一个简单的LSTM层实现[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/RNN/LSTM.py)。

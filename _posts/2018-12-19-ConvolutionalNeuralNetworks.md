@@ -139,7 +139,7 @@ VGG中只使用了两种核：
 
 根据以上表格，发现计算时的最大内存开销在于前面两层卷积层，而参数的数量绝大部分都在全连接层。以每一个数字占$32$bit来算，仅计算一张图片在VGG中的前向传播过程就至少需要$60$MB的内存，保存VGG模型的所有参数至少需要$526$MB的存储空间。
 
-一个不完整的VGG实现示例见[这里](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/3.%20mini_VGG.ipynb)。
+一个不完整的VGG实现示例见[这里](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/3.%20mini_VGG.ipynb)。完整预训练的VGG16模型重载见[这里](https://github.com/Daya-Jin/DL_for_learner/blob/master/CNN/VGG16.py)。
 
 ### GoogLeNet
 
