@@ -47,7 +47,45 @@ $$
 
 藉由隐特征的表示方式，词向量之间很好地保留了其语义信息，并且这种表示方式没有稀疏的缺点。WordEmbedding的核心思想就是如何使用机器学习或深度学习技术去学习得到单词的这种表示。
 
+在实际实现(TensorFlow)中，词的嵌入表示是使用一个矩阵来存储的。假设词汇大小为$\vert{V}\vert$，嵌入维度为$\vert{E}\vert$，那么嵌入表示的矩阵形状就为$(\vert{V}\vert, \vert{E}\vert)$，矩阵的形状同神经网络中的一样。那么查找过程是这样的，假设上述例子中的```king```的onehot表示为：
 
+$$
+x_{king}=
+\left[
+ \begin{matrix}
+   0 & 0 & 1 & 0 & 0 & 0 \\
+  \end{matrix}
+\right]
+$$
+
+嵌入矩阵为：
+
+$$
+emb\_lookup=
+\left[
+ \begin{matrix}
+   X & X & X & X \\
+   X & X & X & X \\
+   -0.95 & 0.93 & 0.7 & 0.02 \\
+   X & X & X & X \\
+   X & X & X & X \\
+   X & X & X & X \\
+  \end{matrix}
+\right]
+$$
+
+```king```的嵌入表示可以通过矩阵相乘得到：
+
+$$
+e_{king}=x_{king}\times{emb\_lookup}=
+\left[
+ \begin{matrix}
+   -0.95 & 0.93 & 0.7 & 0.02 \\
+  \end{matrix}
+\right]
+$$
+
+不难发现，当使用一个词的onehot向量与嵌入矩阵相乘时，其实就相当于取出嵌入矩阵的某一行。因为onehot向量的特殊性，其与任何矩阵相乘起到的是一个查询某行的作用，因此在实现中嵌入矩阵通常叫做```emb_lookup```。
 
 ## Skip-Gram
 
