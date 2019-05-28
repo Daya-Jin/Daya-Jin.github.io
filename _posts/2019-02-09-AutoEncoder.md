@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Auto Encoder"
-categories: deeplearning
+categories: DeepLearning
 tags: autoencoder deeplearning
 ---
 

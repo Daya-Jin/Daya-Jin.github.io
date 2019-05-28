@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Collaborative Filtering"
-categories: recommend
+categories: RecSys
 tags: recommend
 ---
 

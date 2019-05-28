@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Generative Adversarial Network"
-categories: deeplearning
+categories: DeepLearning
 tags: GAN deeplearning
 ---
 
@@ -72,7 +72,7 @@ $\min\limits_{G}V(D^{*},G)$等价于$\min{JS(P_{r}\vert\vert{P_{g}})}$，最优�
 1. 固定G的参数，取一批真实图片$X_{r}$，再生成一批伪造图片$X_{g}$，训练D的分辨能力；
 2. 固定D的参数，取一批真实图片$X_{r}$，再生成一批伪造图片$X_{g}$，训练D的伪造能力。
 
-一个简单的GAN实现[见此]()。
+一个简单的GAN实现[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/GAN/VanillaGAN.ipynb)。
 
 ## Problem
 
