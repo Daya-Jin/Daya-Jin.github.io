@@ -70,3 +70,42 @@ $$
 $$
 
 注意KL散度具有不对称性。
+
+### Maximum Likelihood Estimation
+
+如果已观测到事件$X$的一系列发生概率，求使得这一系列概率出现可能性最大的参数$\theta$，使用最大似然估计：
+
+$$
+\hat{\theta}=\arg\max\limits_{\theta}\prod{P(x_{i}\vert\theta)}
+$$
+
+其中$p(x_{i}\vert\theta)$为事件$x_{i}$在参数$\theta$下的发生概率。特别地，如果某条件概率为：
+
+$$
+\begin{aligned}
+    p(y\vert{x};\theta)&\sim{\mathcal{N}(x\theta,\sigma^{2})} \\
+    &=\frac{1}{\sigma\sqrt{2\pi}}\exp(\frac{-(y-x\theta)^{2}}{2\sigma^{2}}) \\
+\end{aligned}
+$$
+
+参数$\theta$在已有观测样本$\{(x_{i},y_{i})\}$下的最大似然为：
+
+$$
+\begin{aligned}
+    \hat{\theta}&=\arg\max\limits_{\theta}\prod{P(y_{i}|x_{i};\theta)} \\
+    &=\arg\max\limits_{\theta}\sum{\log\frac{1}{\sigma\sqrt{2\pi}}\exp(\frac{-(y_{i}-x_{i}\theta)^{2}}{2\sigma^{2}})} \\
+    &=\arg\max\limits_{\theta}\sum{[\log\frac{1}{\sigma\sqrt{2\pi}}-\frac{(y_{i}-x_{i}\theta)^{2}}{2\sigma^{2}}]} \\
+    &=\arg\min\limits_{\theta}(y_{i}-x_{i}\theta)^{2}
+\end{aligned}
+$$
+
+### Maximum A Posteriori
+
+在最大似然估计中，对于参数$\theta$没有做任何假设，意味着$\theta$可以服从任何分布，只要能使得观测事件发生的概率最大即可。假如在某些情况下，参数$\theta$也是服从某一分布的，那么最大似然估计就不再适用于参数估计了，而应该使用最大后验概率：
+
+$$
+\begin{aligned}
+    \hat{\theta}&=\arg\max\limits_{\theta}\prod{P(\theta|x_{i})} \\
+    &=
+\end{aligned}
+$$
