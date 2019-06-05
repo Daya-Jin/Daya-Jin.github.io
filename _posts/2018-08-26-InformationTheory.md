@@ -106,6 +106,8 @@ $$
 $$
 \begin{aligned}
     \hat{\theta}&=\arg\max\limits_{\theta}\prod{P(\theta|x_{i})} \\
-    &=
+    &=\arg\max\limits_{\theta}\prod{\frac{P(x_{i}\vert\theta)P(\theta)}{P(x_{i})}}
 \end{aligned}
 $$
+
+看可以看出MAP引入了参数$\theta$的先验分布。

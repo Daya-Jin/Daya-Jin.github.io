@@ -10,6 +10,8 @@ tags: GAN deeplearning
 
 # 概述
 
+在实际实现GAN的时候才发现GAN的训练有好多坑，暂不表。
+
 ## GAN
 
 对抗生成网络(Generative Adversarial Network)将博弈思想引入了神经网络的训练过程，GAN由两个网络模型构成：**generator**(G)和**discriminator**(D)，前者是一个生成模型，后者是一个判别模型。整个GAN的的训练过程是联合训练两个网络G和D，GAN的网络框架如下图所示：
