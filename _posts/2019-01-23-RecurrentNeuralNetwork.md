@@ -94,13 +94,12 @@ LSTM使用门结构(sigmoid)来控制单元内的信息流动，并且加入了�
 - $W_{gx}$，$W_{gh}$，$b_{g}$
 - $W_{ox}$，$W_{oh}$，$b_{o}$
 
-明确参数之后LSTM单元内部的计算就很明了了：
+明确参数之后LSTM单元内部的门运算为：
 
 $$
 \begin{aligned}
     f(t)&=\sigma(x_{t}W_{fx}+h_{t-1}W_{fh}+b_{f}) \\
     i(t)&=\sigma(x_{t}W_{ix}+h_{t-1}W_{ih}+b_{i}) \\
-    \widetilde{c}(t)&=tanh(x_{t}W_{gx}+h_{t-1}W_{gh}+b_{g}) \\
     o(t)&=\sigma(x_{t}W_{ox}+h_{t-1}W_{oh}+b_{o}) \\
 \end{aligned}
 $$
@@ -109,9 +108,53 @@ $$
 
 $$
 \begin{aligned}
+    \widetilde{c}(t)&=tanh(x_{t}W_{gx}+h_{t-1}W_{gh}+b_{g}) \\
     c&:=f\times{c}+i\times{\widetilde{c}} \\
     h&:=o\times{tanh(c)} \\
 \end{aligned}
 $$
 
 一个简单的LSTM层实现[见此](https://github.com/Daya-Jin/DL_for_learner/blob/master/RNN/LSTM.py)。
+
+## GRU
+
+GRU是LSTM的一种变体，相较于LSTM中的输入门、遗忘门、输出门，GRU中只有两个门：
+
+- **重置门**(reset gate)：$r(t)$，
+- **更新门**(update gate)：$z(t)$，
+
+每个cell内部的门计算为：
+
+$$
+\begin{aligned}
+    z(t)&=\sigma(x_{t}W_{zx}+h_{t-1}W_{zh}+b_{z}) \\
+    r(t)&=\sigma(x_{t}W_{rx}+h_{t-1}W_{rh}+b_{r}) \\
+\end{aligned}
+$$
+
+GRU状态变化为：
+
+$$
+\begin{aligned}
+    c(t)&=tanh(x_{t}W_{cx}+r(t)\times{h_{t-1}W_{ch}}) \\
+    h_{t}&=(1-z)\times{h_{t-1}}+z\times{c} \\
+\end{aligned}
+$$
+
+## Highway Network
+
+**公路网络**(Highway Network)受LSTM的启发，同样引入了**门机制**(gating mechanism)来限制数据在网络中的流动。
+
+假设普通神经网络中的非线性变换为：
+
+$$
+y=H(x)
+$$
+
+其中$H(x)$为激活函数。
+
+公路网络引入了一个transform gate $T(x)$，还有一个carry gate $1-T(x)$，公路网络中每一层的输出为：
+
+$$
+y=H(x)\cdot{T(x)}+x\cdot{(1-T(x))}
+$$
