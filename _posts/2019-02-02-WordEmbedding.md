@@ -137,7 +137,29 @@ $$
 
 ## word2vec
 
-为了优化Skip-Gram在计算softmax时的计算负担，word2vec改变了预测时的思路。Skip-Gram模型的思路是使用一个中心词去预测上下文词，word2vec将其转成了预测两个单词是否具有上下文关系，即把多分类问题转成了二分类问题。解决extreme multiclass问题所用到的技术叫**负采样**(negative sampling)。
+为了优化Skip-Gram在计算softmax时的计算负担，word2vec提出了两种优化方法：Hierarchical Softmax与Negative Sampling。
+
+### Hierarchical Softmax
+
+一次性平行地计算所有单词的概率值然后取最大概率太低效，那么可以使用分层的思想来计算概率。如果使用一颗平衡二叉树，每个叶节点代表一个单词，那么找到目标单词只需要计算从root到leaf的一条路径，计算复杂度就可以从$V$降低到$\log_{2}V$。把所有单词映射到二叉树的叶节点上，目标是找到最有可能出现的目标单词。
+
+Hierarchical Softmax把神经网络的full softmax层转成了一个树形结构，该树的每个叶子节点代表一个词，该树的结构采用根据词频生成的霍夫曼树。
+
+![](/img/14713582964341.jpg)
+
+每个非叶节点即是一个神经元，其权重参数为$\theta_{i}$。假设$w_{i}$是一个中心词，$w_{2}$是其一个上下文单词，那么根节点的输入为$w_{i}$的嵌入向量$z_{i}$，那么计算$P(w_{2}\vert{w_{i}})$需要经过一条路径：
+
+$$
+\begin{aligned}
+  P(w_{2}\vert{w_{i}})&=\sigma(z_{i}\theta_{1})\cdot\sigma(z_{i}\theta_{2})\cdot(1-\sigma(z_{i}\theta_{3})) \\
+\end{aligned}
+$$
+
+在Hierarchical Softmax训练过程中，期望最大化$P(w_{2}\vert{w_{i}})$就只需要计算一条路径即可，计算复杂度的期望值为$\log_{2}V$，同样通过梯度下降法来优化。
+
+### Negative Sampling
+
+Skip-Gram模型的思路是使用一个中心词去预测上下文词，word2vec将其转成了预测两个单词是否具有上下文关系，即把无监督多分类问题转成了有监督二分类问题。解决extreme multiclass问题所用到的技术叫**负采样**(negative sampling)。
 
 假设文本数据中有这么一段：
 
