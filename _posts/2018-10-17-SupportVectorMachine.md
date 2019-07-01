@@ -87,7 +87,6 @@ $$
 
 其中$C$为样本越界的代价系数，其值越大，对越界的惩罚就越大。
 
-
 ## 最优解
 
 如果我们有如下优化问题：
@@ -137,11 +136,21 @@ g(x^{*})&\le0 \\
 \end{aligned}
 $$
 
-SVM问题是一个带线性不等式约束的最优化问题，可以使用拉格朗日数乘法的对偶问题来解：
+SVM问题是一个带线性不等式约束的最优化问题：
 
 $$
 \begin{aligned}
-\lambda^{*},\theta^{*}&=\arg\max\limits_{\lambda}\min\limits_{\theta}L(\theta,\lambda) \\&=\arg\max\limits_{\lambda}\min\limits_{\theta}\frac{1}{2}||\theta||_{2}^{2}-\sum_{i=1}^{m}\lambda_{i}[y^{i}\cdot{}(x^{i}\theta^{T}+\theta_{0})-1], \qquad s.t. \  \lambda_{i}\ge0
+    \theta^{*},\lambda^{*}&=\arg\min\limits_{\theta}\max\limits_{\lambda}L(\theta,\lambda) \\
+    &=\arg\min\limits_{\theta}\max\limits_{\lambda}\frac{1}{2}||\theta||_{2}^{2}-\sum_{i=1}^{m}\lambda_{i}[y^{i}\cdot{}(x^{i}\theta^{T}+\theta_{0})-1], \qquad s.t. \  \lambda_{i}\ge0
+\end{aligned}
+$$
+
+将其转成对偶问题来解：
+
+$$
+\begin{aligned}
+\lambda^{*},\theta^{*}&=\arg\max\limits_{\lambda}\min\limits_{\theta}L(\theta,\lambda) \\
+&=\arg\max\limits_{\lambda}\min\limits_{\theta}\frac{1}{2}||\theta||_{2}^{2}-\sum_{i=1}^{m}\lambda_{i}[y^{i}\cdot{}(x^{i}\theta^{T}+\theta_{0})-1], \qquad s.t. \  \lambda_{i}\ge0
 \end{aligned}
 $$
 
@@ -261,7 +270,7 @@ $$
 | :--: | :--: | :--: |
 |linear|$\kappa(x,y)={\langle}x,y{\rangle}$|计算原始空间的内积|
 |polynomial|$\kappa(x,y)=(\gamma{\langle}x,y{\rangle}+c)^{d}$|计算d维空间的内积|
-|Radial Basis Function|$\kappa(x,y)=exp(-\gamma\|\|x-y\|\|^{2})$|-|
+|Radial Basis Function|$\kappa(x,y)=exp(-\gamma\vert{x-y}\vert^{2})$|-|
 |sigmoid|$tanh(\gamma{\langle}x,y{\rangle}+c)$|-|
 
 ## 软间隔SVM
@@ -300,11 +309,13 @@ $$
 令$\frac{\partial{L}}{\partial{\theta}}=\frac{\partial{L}}{\partial{\theta_{0}}}=\frac{\partial{L}}{\partial{\xi_{i}}}=0$得：
 
 $$
+\left\{
 \begin{aligned}
-\theta^{*}&=\sum_{i=1}^{m}\lambda_{i}y^{i}x^{i} \\
--\sum\limits_{i=1}^{m}\lambda_{i}y^{i}&=0 \\
-C&=\lambda_{i}+\gamma_{i} \\
+&\theta^{*}=\sum_{i=1}^{m}\lambda_{i}y^{i}x^{i} \\
+&-\sum\limits_{i=1}^{m}\lambda_{i}y^{i}=0 \\
+&C=\lambda_{i}+\gamma_{i} \\
 \end{aligned}
+\right.
 $$
 
 将最优$\theta^{*}$带入得：
@@ -387,3 +398,10 @@ $$
 由于SMV的预测函数中存在两训练样本的内积项，所以核技巧能很自然而然的与SVM相结合；除了这个原因之外，SVM中的拉格朗日参数$\lambda$，非支持向量的该参数值是为$0$的，所以在计算决策边界时的计算量并不高，这也是核技巧常用于SVM的原因之一。
 
 最后，两者的优化复杂度不一样，LR由于模型本身简单，可以使用迭代的梯度下降法进行优化；而SVM目前成熟的优化方法就是SMO算法。另外，由于SVM使用了“距离”的概念，所以对数据做归一化处理是有好处的，还由于维度诅咒的原因，在高维空间下距离的概念会变得十分抽象，所以在高维情况下，会更倾向于实用LR。
+
+## 关于对偶问题
+
+至于为什么要将SVM的原问题转化成对偶问题，在网上搜到有如下几种说法：
+
+- 对偶问题的解中有$\langle\hat{x},x^{i}\rangle$这样的内积形式，可以很方便地引入核技巧
+- 从对偶问题的求解过程可以看出只需要求出最优的$\lambda^{*}$即可，而$\lambda$的数量等同于样本的数量；反之，原问题需要求解$\theta^{*}$，而$\theta^{*}$的数量等同于数据的维度。
