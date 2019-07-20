@@ -26,27 +26,32 @@ $$
 \vec{h}=\lbrack{h_{1},h_{2},\cdots,h_{T}}\rbrack
 $$
 
-其中$T$表示输入序列$X$的时间长度。然后$h_{T}$作为Decoder的初始状态$s_{0}$，开始解码并输出$s_{1}$。Align Model中每一次decode都需要考虑当前时刻与$X$序列每一个时刻的关系。令Decoder的第$1$时刻与$\vec{h}$各时刻的关系用$\vec{e}_{1}=\lbrack{e_{1,1},e_{1,2},\cdots,e_{1,T}}\rbrack$来表示，则按论文中给出的计算方法有：
+其中$T$表示输入序列$X$的时间长度。然后$h_{T}$作为Decoder的初始状态$s_{0}$，开始解码并输出$s_{1}$。Align Model中每一次decode都需要考虑当前时刻与$X$序列每一个时刻的关系。令Decoder的第$1$时刻与$\vec{h}$各时刻的关系用一个分数向量$\vec{e}_{1}$来表示：
 
 $$
 \begin{aligned}
+    \vec{e}_{1}&=\lbrack{e_{1,1},e_{1,2},\cdots,e_{1,T}}\rbrack \\
     e_{1,i}&=f(s_{0},h_{i}) \\
     &=w_{e}\cdot{tanh(w_{s}\cdot{s_{0}}+w_{h}\cdot{h_{i}})} \quad i\in\lbrack{1,T}\rbrack
 \end{aligned}
 $$
 
-对$\vec{e}_{1}$做softmax归一化就可以得到一个和为$1$的权重向量$\vec{\alpha}_{1}=\lbrack{\alpha_{1,1},\alpha_{1,2},\cdots,\alpha_{1,T}}\rbrack$：
-
-$$
-\vec{\alpha}_{1}=\frac{\exp(\vec{e}_{1})}{\sum_{T}\exp(\vec{e}_{1})}
-$$
-
-再将权重向量与$\vec{h}$做内积就得到了context vec：
+对$\vec{e}_{1}$做softmax归一化就可以得到一个和为$1$的权重向量$\vec{\alpha}_{1}$：
 
 $$
 \begin{aligned}
-    c_{1}&=\left< \vec{\alpha}_{1},\vec{h} \right> \\
-    &=\sum\limits_{T}\alpha_{1,i}\cdot{h_{1,i}} \\
+    \vec{\alpha}_{1}&=\lbrack{\alpha_{1,1},\alpha_{1,2},\cdots,\alpha_{1,T}}\rbrack \\
+    \vec{\alpha}_{1}&=\frac{\exp(\vec{e}_{1})}{\sum_{T}\exp(\vec{e}_{1})} \\
+\end{aligned}
+
+$$
+
+再将Encoder每个时刻的输出与对应位置的权重相乘再求和，就得到了Decoder该时刻的contex vec：
+
+$$
+\begin{aligned}
+    c_{1}&=\sum\limits_{T}\vec{h}\cdot\vec{\alpha}_{1} \\
+    &=\sum\limits_{T}h_{i}\cdot\alpha_{1,i} \\
 \end{aligned}
 $$
 
@@ -86,5 +91,8 @@ BeamSearch方法改进了这一缺点，使用BeamSearch策略的Decoder每时�
 
 ![](/img/A-partially-completed-beam-search-procedure-with-a-beam-width-of-5-for-an-example-input.png)
 
-## Transformer
+## Self-Attention
 
+传统的Seq2Seq模型由于其结构上的缺陷，从而没法并行训练
+
+Transformer
