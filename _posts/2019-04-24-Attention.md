@@ -43,7 +43,6 @@ $$
     \vec{\alpha}_{1}&=\lbrack{\alpha_{1,1},\alpha_{1,2},\cdots,\alpha_{1,T}}\rbrack \\
     \vec{\alpha}_{1}&=\frac{\exp(\vec{e}_{1})}{\sum_{T}\exp(\vec{e}_{1})} \\
 \end{aligned}
-
 $$
 
 再将Encoder每个时刻的输出与对应位置的权重相乘再求和，就得到了Decoder该时刻的contex vec：
