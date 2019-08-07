@@ -224,6 +224,39 @@ $$
 
 Xavier Initialization的推荐做法是将权重参数初始化为一个均值为$0$，方差为$\frac{2}{n_{I}+n_{I}}$。
 
+## Optimization
+
+为了统一各优化算法的描述，这里先借鉴[该文](https://zhuanlan.zhihu.com/p/32230623)中的方法定义一个优化算法框架。令参数为$\theta$，学习率为$\eta$，目标函数为$J$，优化过程可分为三步：
+
+1. 计算目标函数$J$关于参数$\theta$的梯度：$g=\nabla_{\theta}J$；
+2. 更新一阶动量$m=\phi(g)$与二阶动量$v=\psi(g)$；
+3. 更新参数$\theta:=\theta-\eta\frac{m}{v}$。
+
+### GD
+
+**梯度下降**(gradient decent)是最经典的优化方法了，其中没有动量的概念，所以$m=g$与二阶动量$v1$，参数更新式为：
+
+$$
+\theta:=\theta-\eta\cdot{g}
+$$
+
+梯度下降有两个变种，**批量梯度下降**(mini-batch GD)与**随机梯度下降**(Stochastic GD)。前者每次使用一个batch的数据去计算梯度更新参数，后者每次使用单个样本计算梯度更新参数。
+
+### SGD with Momentum
+
+GD的缺点在于其学习率(步长)是固定的，Momentum的思想就是加入一个一阶动量来使得学习率会依据历史值而变化。Momentum优化方法的计算公式如下(注：这里是用的是TensorFlow中Momentum的实现方式)：
+
+$$
+\begin{aligned}
+    m:=\gamma{m}+g \\
+    \theta:=\theta-\eta\cdot{m} \\
+\end{aligned}
+$$
+
+可以看出Momentum一阶动量实际上是梯度的历史加权和。
+
+待补充。
+
 ## Batch Normalization
 
 在权重参数初始化一节中讲到，如果希望神经网络学到东西，那么在正向传播时激活输出不能进入饱和区，即不能让反向传播过程中参数梯度过小，令每一层的输出与输入服从同分布即可解决该问题。Batch Normalization的思想就是预设一个分布函数，并对每一层的线性输出做操作，使其强行服从该分布。

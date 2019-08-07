@@ -58,13 +58,28 @@ $$S^{2}=\frac{\sum_{i}^{n}(x_{i}-\bar{x})^{2}}{n-1}$$
 
 ## Distribution
 
-**Gaussian distribution**，高斯分布：
+**Gaussian Distribution**，高斯分布：
 
 $$
 \mathcal{N}(\mu,\sigma)=\frac{1}{\sqrt{2\pi}\sigma}exp\Big(-\frac{(x-\mu)^{2}}{2\sigma^{2}}\Big)
 $$
 
 对高斯分布而言，有一个$3\sigma$原则，即偏离均值超过$3$个$\sigma$的数据($z>3$)会被视为离群值。
+
+**Bernoulli Distribution**，伯努利分布，也称二项分布：
+
+$$
+\begin{cases}
+    P(X=1)=p \\
+    P(X=0)=1-p \\
+\end{cases}
+$$
+
+最经典的二项分布事件是抛硬币。更常用的是$n$重伯努利分布，表示做$n$次独立伯努利事件，某一事件发生$k$次的概率为：
+
+$$
+P(X=k)=C_{n}^{k}p^{k}(1-p)^{n-k}
+$$
 
 ## Law
 
@@ -112,3 +127,4 @@ $$
 |fail to reject $H_{0}$|Good|Type II error|
 
 当原假设$H_{0}$成立时，但是却拒绝了$H_{0}$，则发生了**第一类错误**；若原假设$H_{0}$实际不成立，但是却接受了$H_{0}$，则发生了**第二类错误**。
+
