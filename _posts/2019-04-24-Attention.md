@@ -90,8 +90,95 @@ BeamSearch方法改进了这一缺点，使用BeamSearch策略的Decoder每时�
 
 ![](/img/A-partially-completed-beam-search-procedure-with-a-beam-width-of-5-for-an-example-input.png)
 
-## Self-Attention
+## Transformer
 
-传统的Seq2Seq模型由于其结构上的缺陷，从而没法并行训练
+传统的Seq2Seq模型由于其结构上的缺陷(RNN与CNN)，从而没法并行训练。Google在2017年提出一种全新的架构**Transfomer**，下面就逐步开始讲。
 
-Transformer
+### Self-Attention
+
+Transfomer中的关键技术就是Self-Attention机制，论文中将attention机制描述成“一个query和一系列k-v对与输出之间的映射关系”，“输出就是各value的加权和”，而“分配给各value的权重是通过query与各对应的key计算出来的”。
+
+令$x_{i}$表示某个单词的嵌入向量，嵌入维度为$d_{model}$。首先，对一个序列上的每一个$x_{i}$，都乘上$3$个矩阵再次降维得到三个向量，分别令其为**Query vector**、**Key vector**和**Value vector**，其中query和key的维度为$d_{k}$，value的维度为$d_{v}$。
+
+$$
+\begin{aligned}
+    q_{i}&=x_{i}W^{Q} \\
+    k_{i}&=x_{i}W^{K} \\
+    v_{i}&=x_{i}W^{V} \\
+\end{aligned}
+$$
+
+易得三个降维矩阵的形状分别为$shape(W^{Q})=shape(W^{K})=(d_{model},d_{k})$，$shape(W^{V})=(d_{model},d_{v})$。
+
+$$
+z_{i}=\sum\limits_{j=1}^{l}softmax(\frac{q_{i}k_{j}}{\sqrt{d_{k}}})v_{j}
+$$
+
+然后推广到矩阵形式，令序列长度为$l$，先计算位置$x_{i}$上的attention向量。
+
+$$
+\begin{aligned}
+    shape(x_{i})&=(1,d_{model}) \\
+    shape(q_{i})&=(1,d_{k}) \\
+    shape(K)&=(l,d_{k}) \\
+    shape(V)&=(l,d_{v}) \\
+\end{aligned}
+$$
+
+首先将$q_{i}$与所有位置上的$k_{i}$做内积，得到每一个位置上的分数：
+
+$$
+shape(q_{i}K^{T})=(1,l)
+$$
+
+除以$\sqrt{d_{k}}$后经$softmax$归一化，最后计算每一个位置上的value加权和：
+
+$$
+\begin{aligned}
+    Attention(q_{i},K,V)&=softmax(\frac{q_{i}K^{T}}{\sqrt{d_{k}}})V \qquad shape:(1,d_{v}) \\
+    Attention(Q,K,V)&=softmax(\frac{QK^{T}}{\sqrt{d_{k}}})V \qquad shape:(l,d_{v}) \\
+\end{aligned}
+$$
+
+### Multi-Head Attention
+
+为了解决一词多义的问题，Transfomer还提出了改进的Attention机制：Multi-Head Attention。通过同时设置多组$(W^{Q},W^{K},W^{V})$，实现将一个嵌入向量$x_{i}$映射到多个子空间，即在某一位置上得到多个attention向量$\{z_{i}^{1},\cdots,z_{i}^{h}\}$。把同一个位置的多组attention向量拼接起来再乘上一个降维矩阵$W^{O}$就得到了最终的attention向量：
+
+$$
+MultiHead(Q,K,V)=Concat(Z^{1},\cdots,Z^{h})W^{O}
+$$
+
+### Positional Encoding
+
+RNN和序列模型的优势就在于考虑了序列中不同元素的位置信息，Transfomer在首个encoder与decoder处引入了**位置编码**技术，对每一个位置元素的嵌入向量$x_{i}$，都会加上一个等长的**位置向量**PE。在原论文中$x_{pos}$对应的PE由两个三角函数确定：
+
+$$
+\begin{aligned}
+    PE_{pos,2i}&=\sin\frac{pos}{10000^{2i/d_{model}}} \\
+    PE_{pos,2i+1}&=\cos\frac{pos}{10000^{2i/d_{model}}} \\
+\end{aligned}
+$$
+
+其中$pos$表示序列中的第$pos$个元素，而$i$表示向量中的第$i$位。
+
+### Architecture
+
+Transfomer在整体上还是一个Encoder-Decoder架构，并且Encoder端与Decoder端有略微的不同。
+
+Encoder端比较简单，就是：
+
+```
+Encoder = (Multi-Head Attention Layer + Feed-Forward Layer) * N
+```
+
+但是第一个Encoder的输入需要加上PE。一个Transfomer中会包含$N$个堆叠的Encoder，Encoder端最终的输出为$K$跟$V$，会被缓存。
+
+然后是Decoder端，同样的，第一个Decoder的输入也是加上PE的嵌入向量。Decoder比Encoder多一层，通常叫做Encoder-Decoder Attention Layer，该层计算的是Decoder某一时刻的query与缓存$K$、$V$的attention向量，该层其实相当于Seq2Seq中的attention机制。然后Decoder端的Multi-Head Attention计算也与Encoder端不同，因为Decoder负责解码，未来时刻的信息不能参与计算，所以需要使用掩码来屏蔽当前位置之后的信息，称为Masked Multi-Head Attention。
+
+```
+Decoder = (Masked Multi-Head Attention Layer + Encoder-Decoder Attention Layer + Feed-Forward Layer) * N
+```
+
+一个Transfomer的架构图如下所示(图源论文)：
+
+![](/img/Transformer.jpg)
