@@ -14,7 +14,7 @@ tags: NLP
 
 ![](/img/seq2seq_ts.png)
 
-Seq2Seq架构分为两部分，前一部分是**编码器**(Encoder)，后一部分是**解码器**(Decoder)。以RNN为例(不限于RNN)，作为Encoder的RNN负责读入全部输入句子$X$，得到一个**上下文向量**(Context Vector)。Decoder的作用就是读入这个Context Vec，然后逐步预测$Y$。Seq2Seq架构的最大缺点就是把整个序列都压缩到了一个Context Vec中，Decoder要想从单个向量中精确并完整地预测时序信息比较难。
+Seq2Seq架构分为两部分，前一部分是**编码器**(Encoder)，后一部分是**解码器**(Decoder)。以RNN为例(不限于RNN)，作为Encoder的RNN负责读入全部输入句子$X$，得到一个**上下文向量**(Context Vector)。Decoder的作用就是读入这个Context Vec，然后逐步预测$Y$。Seq2Seq架构的优点在于可以处理输入输出端不等长的序列数据，最大的缺点就是把整个序列都压缩到了一个Context Vec中，Decoder要想从单个向量中精确并完整地预测时序信息比较难。
 
 ## Attention
 
