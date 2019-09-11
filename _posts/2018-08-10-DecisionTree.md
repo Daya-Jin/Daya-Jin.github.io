@@ -215,13 +215,13 @@ $$
 $$
 \begin{aligned}
 \Delta C_{\alpha}(t)&=C_{\alpha}(T-T_{t})-C_{\alpha}(T) \\
-&=Err(T-T_{t})-Err(T)+\alpha(|T-T_{t}|-|T|) \\
-&=(-Err(T_{t})+err(t))+\alpha(-|T_{t}|+1) \\
-&=err(t)-Err(T_{t})+\alpha(1-|T_{t}|) \\
+&=Err(T-T_{t})-Err(T)+\alpha(\vert{T-T_{t}}\vert-\vert{T}\vert) \\
+&=(-Err(T_{t})+err(t))+\alpha(-\vert{T_{t}}\vert+1) \\
+&=err(t)-Err(T_{t})+\alpha(1-\vert{T_{t}}\vert) \\
 \end{aligned}
 $$
 
-其中，$T_{t}$为树$T$中以节点$t$为根节点的子树。令$\Delta C_{\alpha}(t)=0$得$g(t)=\alpha'=\frac{err(t)-Err(T_{t})}{|T_{t}-1|}$，整个CCP算法流程如下所述：
+其中，$T_{t}$为树$T$中以节点$t$为根节点的子树。令$\Delta C_{\alpha}(t)=0$得$g(t)=\alpha'=\frac{err(t)-Err(T_{t})}{\vert{T_{t}-1}\vert}$，整个CCP算法流程如下所述：
 
 1. 生成一颗完整树$T^{0}$，对所有的非叶节点都进行剪枝尝试，找到一个最小化$g(t_{1})$的剪枝节点$t_{1}$，令$\alpha^{1}=g(t_{1})$，$T^{1}=T^{0}-T_{t_{1}}$
 
