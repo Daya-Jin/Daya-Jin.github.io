@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Supply and Demand"
+title:  "Market, Supply and Demand"
 categories: Economics
 tags: Economics
 ---
@@ -106,3 +106,6 @@ $$
 ![](/img/2019-10-05_20-31-29.bmp)
 
 自由市场总是会使得总剩余最大。
+
+## International Trade
+
