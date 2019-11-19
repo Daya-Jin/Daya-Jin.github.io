@@ -88,3 +88,11 @@ CPI也不是一个完美的指标。首先，CPI的最大缺陷在于其购物�
 前者体现的是国内生产的所有商品与服务的总值，后者体现的是消费者购买的所有商品与服务的总值。
 
 ## (待补充)
+
+衡量账户金额变化率的称为**名义利率**(nominal interest rate)，考虑到通胀而矫正的利率称为**真正利率**(real interest rate)：
+
+$$
+Real\ interest\ rate=Nominal\ Interest\ Rate-Inflation\ Rate
+$$
+
+名义利率指示的是你的账面数字随时间的增长率，而真正利率指示的是购买力随时间的增长率。
