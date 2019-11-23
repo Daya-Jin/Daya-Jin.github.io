@@ -65,5 +65,7 @@ print('{:x}'.format(n))
 
 最后输出的是校验码的十六进制网络字节序形式，对接收方而言这个值应该是$0$。
 
+封装的ICMP校验和代码[见此](https://github.com/Daya-Jin/As_a_Programmer/blob/master/Python/ICMP_checksum.py)。
+
 ## Ping
 
