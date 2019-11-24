@@ -38,7 +38,7 @@ ICMP报文头的形式如下图所示，共8Byte。在使用ping命令时，Type
 ```python
 type = '\x08'  # ICMP Echo Request
 code = '\x00'
-checksum_padding = '\x00\x00'  # 发送时该字段被置零，接收时抓包查看
+checksum_padding = '\x00\x00'  # 发送时该字段被置零
 id = '\x00\x01'  # ID，该字段需要抓包查看
 seq = '\x00\xfb'  # Sequence，该字段需要抓包查看
 body = "abcdefghijklmnopqrstuvwabcdefghi"  # 装载数据
@@ -49,10 +49,10 @@ icmp_msg = type + code + checksum_padding + id + seq + body
 
 ```python
 acc = 0
-    for i in range(0, len(icmp_msg), 2):  # 16bit一组
-        group_val = ord(icmp_msg[i]) + (ord(icmp_msg[i + 1]) << 8)  # 16bit的值，注意字节顺序
-        acc += group_val
-        acc = (acc & 0xffff) + (acc >> 16)
+for i in range(0, len(icmp_msg), 2):  # 16bit一组
+    group_val = ord(icmp_msg[i]) + (ord(icmp_msg[i + 1]) << 8)  # 16bit的值，注意字节顺序
+    acc += group_val
+    acc = (acc & 0xffff) + (acc >> 16)
 ```
 
 最后一步是取反，还要将字节序转换成网络字节序：
