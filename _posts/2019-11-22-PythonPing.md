@@ -33,16 +33,16 @@ ICMP报文头的形式如下图所示，共8Byte。在使用ping命令时，Type
 
 后面的值为报文装载数据，可以看出是从a到i的顺序字母串。下面以此为例，使用Python实现ICMP的校验和计算。
 
-首先是报文的构建，这里以接收方为例。根据wireshark抓包，易得首部的所有字段情况：
+首先是报文的构建，这里以发送方为例。根据wireshark抓包，易得首部的所有字段情况，其中Checksum字段需要置零：
 
 ```python
-type = '\x08'  # ICMP Echo Request
-code = '\x00'
-checksum_padding = '\x00\x00'  # 发送时该字段被置零
-id = '\x00\x01'  # ID，该字段需要抓包查看
-seq = '\x00\xfb'  # Sequence，该字段需要抓包查看
-body = "abcdefghijklmnopqrstuvwabcdefghi"  # 装载数据
-icmp_msg = type + code + checksum_padding + id + seq + body
+type = 8  # Type: '\x08'(ICMP Echo Request)
+code = 0  # Code: '\x00'
+checksum = 0  # Checksum
+id = 1  # ID: '\x00\x01'
+seq = 251  # Sequence: '\x00\xfb'
+body = b"abcdefghijklmnopqrstuvwabcdefghi"  # Data
+icmp_msg = struct.pack('!BBHHH32s', type, code, checksum, id, seq, body)
 ```
 
 然后就是分组、累加，因为此处报文是根据网络字节序拼接形成的，所以在做分组加法时，后面的值为高位，前面的值为低位：
@@ -50,20 +50,18 @@ icmp_msg = type + code + checksum_padding + id + seq + body
 ```python
 acc = 0
 for i in range(0, len(icmp_msg), 2):  # 16bit一组
-    group_val = ord(icmp_msg[i]) + (ord(icmp_msg[i + 1]) << 8)  # 16bit的值，注意字节顺序
+    group_val = icmp_msg[i] + (icmp_msg[i + 1] << 8)  # 16bit的值，注意字节顺序
     acc += group_val
     acc = (acc & 0xffff) + (acc >> 16)
 ```
 
-最后一步是取反，还要将字节序转换成网络字节序：
+最后一步是取反，还要将字节序转换成网络字节序，最后得到的网络字节序校验和```n```应该和上图抓包中的保持一致：$\x4c60$，即十进制的$19552$：
 
 ```python
 h = ~acc & 0xffff  # host byte order(取反并截取低16位)
 n = h >> 8 | (h << 8 & 0xff00)  # network byte order(高8位低8位互换)
-print('{:x}'.format(n))
+assert n == 19552  # '\x4c60'
 ```
-
-最后输出的是校验码的十六进制网络字节序形式，对接收方而言这个值应该是$0$。
 
 封装的ICMP校验和代码[见此](https://github.com/Daya-Jin/As_a_Programmer/blob/master/Python/ICMP_checksum.py)。
 
