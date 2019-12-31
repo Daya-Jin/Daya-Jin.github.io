@@ -67,3 +67,51 @@ assert n == 19552  # '\x4c60'
 
 ## Ping
 
+有了ICMP的校验和程序后，要实现一个ping程序就不难了。
+
+首先是创建套接字，原始套接字才支持ICMP协议：
+
+```python
+import socket
+
+addr_d = socket.gethostbyname(host)    # destination
+sock = socket.socket(socket.AF_INET,
+                    socket.SOCK_RAW,
+                    socket.getprotobyname("icmp"))
+```
+
+使用```struct```模块来构建ICMP报文：
+
+```python
+def build_icmpmsg(type, code, checksum, id, seq, data):
+    icmp_msg = struct.pack('!BBHHH32s', type, code, checksum, id, seq, data)
+    checksum = get_checksum(icmp_msg)
+    return struct.pack('!BBHHH32s', type, code, checksum, id, seq, data)
+
+icmp_msg = build_icmpmsg(TYPE, CODE, CHECKSUM, ID, SEQ, DATA)
+```
+
+发送报文然后等待响应。需要注意的是，程序接收到的是网络层的报文，即IP报文。ICMP首部在IP报文中位于第$21-28$字节：
+
+```python
+import time, select
+
+sock.sendto(icmp_msg, (addr_d, 80))
+while True:
+    readable = select.select([sock], [], [], TIME_OUT)
+    res_t = time.time() - start_t
+    if readable[0] == [] or res_t >= TIME_OUT:  # 超时
+        break
+
+    receive_msg, addr = sock.recvfrom(1024)
+    icmp_header = receive_msg[20:28]  # ICMP首部
+    type, code, checksum, id, seq = struct.unpack('!BBHHH', icmp_header)
+
+    if type == 0 and seq == SEQ:
+        print("来自 {} 的回复: 字节=32".format(addr[0]))
+        time.sleep(1)
+
+    break
+```
+
+Windows版的复刻ping程序[见此](https://github.com/Daya-Jin/As_a_Programmer/blob/master/Python/ping.py)。
