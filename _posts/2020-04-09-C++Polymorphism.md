@@ -209,6 +209,10 @@ void Yi::Hurted(void) {
 }
 ```
 
+### 原理
+
+涉及到底层的地址与指针，待补充
+
 ## 前置声明
 
 这是在写示例时遇到的一个坑。在声明英雄类时，英雄类之间产生了互相引用的问题，结果就是编译器一直报[C2061](https://docs.microsoft.com/zh-cn/cpp/error-messages/compiler-errors-1/compiler-error-c2061?f1url=https%3A%2F%2Fmsdn.microsoft.com%2Fquery%2Fdev16.query%3FappId%3DDev16IDEF1%26l%3DZH-CN%26k%3Dk(C2061)%26rd%3Dtrue%26f%3D255%26MSPPError%3D-2147217396&view=vs-2019)错误。原因就在于如下代码：
