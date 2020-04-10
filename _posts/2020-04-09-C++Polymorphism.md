@@ -39,7 +39,7 @@ public:
 };
 ```
 
-```Hero.cpp```：
+&nbsp;```Hero.cpp```：
 
 ```c++
 #include<iostream>
@@ -65,7 +65,7 @@ void Yi::Hurted() {
 }
 ```
 
-```main.cpp```：
+&nbsp;```main.cpp```：
 
 ```c++
 #include<iostream>
@@ -82,10 +82,10 @@ int main(void) {
 
 上述代码构成的程序是正常运行的：
 
->Garen attacks!\
-Yi was attacked!\
-Yi attacks!\
-Garen was attacked!
+>Garen attacks!
+>Yi was attacked!
+>Yi attacks!
+>Garen was attacked!
 
 但是容易发现如果要新增一个英雄的话，比如现要新增一个名为"EZ"的新英雄，上述代码的改动是可预见的：所有旧英雄中都需要新增一个成员函数```void Attack(EZ* p)```，并且新英雄```EZ```类中需要完成对所有旧英雄的攻击代码。这样的改动量是无法接受的，注意到```Hero```基类所派生的所有子类都有```Attack```和```Hurted```行为，只是应用对象的类不同，自然而然想到如下思路：在基类中实现，由子类继承，并在调用时重载。
 
