@@ -144,7 +144,70 @@ Hero was attacked!
 
 ### 解决
 
+相比于普通的函数重载如```int add(int a,int b)```与```double add(double a,double b)```，上述代码中在父类实现的成员函数并没有指定具体的类型，而是仅以父类类型来进行限定。虽然C++可以自动完成子类到父类的自动转换，但代码的运行结果表明转换之后调用的函数访问的是父类对象的属性。
 
+想要以父类形式调用子类中的重载函数，需要用到C++中的一个特性——**虚函数**。在父类中对被子类重载的函数前使用```virtual```关键字修饰即可。修改后的代码如下所示，```Hero.h```：
+
+```c++
+#include<string>
+using namespace std;
+
+class Hero {
+	const string name = "Hero";
+	
+public:
+	virtual void Attack(Hero* p);
+	virtual void Hurted();
+};
+
+class Yi;    // 为避免互相引用所必要的前置声明
+
+class Garen :public Hero {
+	const string name = "Garen";
+
+public:
+	void Attack(Hero* p);
+	void Hurted();
+};
+
+class Yi :public Hero {
+	const string name = "Yi";
+
+public:
+	void Attack(Hero* p);
+	void Hurted();
+};
+```
+
+```Hero.cpp```：
+
+```c++
+#include<iostream>
+#include "Hero.h"
+using namespace std;
+
+void Hero::Attack(Hero* p) {}
+
+void Hero::Hurted() {}
+
+void Garen::Attack(Hero* p) {
+	cout << this->name << " attacks!"<< endl;
+	p->Hurted();
+}
+
+void Garen::Hurted(void) {
+	cout << this->name << " was attacked!" << endl;
+}
+
+void Yi::Attack(Hero* p) {
+	cout << this->name << " attacks!" << endl;
+	p->Hurted();
+}
+
+void Yi::Hurted(void) {
+	cout << this->name << " was attacked!" << endl;
+}
+```
 
 ## 前置声明
 
