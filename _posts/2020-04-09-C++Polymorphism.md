@@ -10,7 +10,9 @@ tags: C++
 
 ## 多态
 
-从示例来讲C++中的多态。现在有如下需求：某游戏包含若干英雄，每个英雄有攻击动作和受伤反应。直觉上具体的实现就是定义一个英雄基类，然后再派生出若干子类，在子类中实现每个英雄的行为，需要注意的是，攻击动作会有一个目标英雄，并且攻击动作会引发目标英雄的受伤反应。那么一个最简易的实现代码如下所示。```Hero.h```：
+### 需求
+
+从示例来讲C++中的多态。现在有如下需求：某游戏包含若干英雄，每个英雄有攻击动作和受伤反应。一个最蠢的实现就是定义一个英雄基类，然后再派生出若干子类，**在子类中**实现每个英雄的行为，需要注意的是，攻击动作会有一个目标英雄，并且攻击动作会引发目标英雄的受伤反应。那么一个最简易的实现代码如下所示。```Hero.h```：
 
 ```c++
 #include<string>
@@ -19,7 +21,6 @@ using namespace std;
 class Hero {};
 
 class Yi;    // 为避免互相引用所必要的前置声明
-class EZ;
 
 class Garen :public Hero {
 	const string name = "Garen";
@@ -46,7 +47,7 @@ public:
 using namespace std;
 
 void Garen::Attack(Yi* p) {
-	cout << this->name << " attacks Yi!" << endl;
+	cout << this->name << " attacks!" << endl;
 	p->Hurted();
 }
 
@@ -55,7 +56,7 @@ void Garen::Hurted() {
 }
 
 void Yi::Attack(Garen* p) {
-	cout << this->name << " attacks Garen" << endl;
+	cout << this->name << " attacks!" << endl;
 	p->Hurted();
 }
 
@@ -78,6 +79,72 @@ int main(void) {
 	return 0;
 }
 ```
+
+上述代码构成的程序是正常运行的：
+
+>Garen attacks!\
+Yi was attacked!\
+Yi attacks!\
+Garen was attacked!
+
+但是容易发现如果要新增一个英雄的话，比如现要新增一个名为"EZ"的新英雄，上述代码的改动是可预见的：所有旧英雄中都需要新增一个成员函数```void Attack(EZ* p)```，并且新英雄```EZ```类中需要完成对所有旧英雄的攻击代码。这样的改动量是无法接受的，注意到```Hero```基类所派生的所有子类都有```Attack```和```Hurted```行为，只是应用对象的类不同，自然而然想到如下思路：在基类中实现，由子类继承，并在调用时重载。
+
+### 问题
+
+C++自带基类与派生类的互相转化机制，因此更改后的代码如下所示。```Hero.h```：
+
+```c++
+#include<string>
+using namespace std;
+
+class Hero {
+	const string name = "Hero";
+
+public:
+	void Attack(Hero* p);
+	void Hurted();
+};
+
+class Yi;    // 为避免互相引用所必要的前置声明
+
+class Garen :public Hero {
+	const string name = "Garen";
+};
+
+class Yi :public Hero {
+	const string name = "Yi";
+};
+```
+
+```Hero.cpp```：
+
+```c++
+#include<iostream>
+#include "Hero.h"
+using namespace std;
+
+void Hero::Attack(Hero* p) {
+	cout << this->name << " attacks!" << endl;
+	p->Hurted();
+}
+
+void Hero::Hurted(void) {
+	cout << this->name << " was attacked!" << endl;
+}
+```
+
+修改后的程序输出为：
+
+>Hero attacks!\
+Hero was attacked!\
+Hero attacks!\
+Hero was attacked!
+
+继承重载未生效。
+
+### 解决
+
+
 
 ## 前置声明
 
