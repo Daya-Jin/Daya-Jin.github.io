@@ -116,7 +116,7 @@ class Yi :public Hero {
 };
 ```
 
-```Hero.cpp```：
+&nbsp;```Hero.cpp```：
 
 ```c++
 #include<iostream>
@@ -135,10 +135,10 @@ void Hero::Hurted(void) {
 
 修改后的程序输出为：
 
->Hero attacks!\
-Hero was attacked!\
-Hero attacks!\
-Hero was attacked!
+>Hero attacks!
+>Hero was attacked!
+>Hero attacks!
+>Hero was attacked!
 
 继承重载未生效。
 
@@ -179,7 +179,7 @@ public:
 };
 ```
 
-```Hero.cpp```：
+&nbsp;```Hero.cpp```：
 
 ```c++
 #include<iostream>
