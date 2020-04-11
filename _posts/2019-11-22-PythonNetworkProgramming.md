@@ -12,7 +12,7 @@ tags: Python Network
 
 一个简单的TCP回显服务器与客户端程序。
 
-```server.py```：
+&nbsp;```server.py```：
 
 ```python
 import socket
@@ -33,7 +33,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             conn.sendall(data)    # 发送所有数据
 ```
 
-```client.py```：
+&nbsp;```client.py```：
 
 ```python
 import socket
