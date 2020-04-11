@@ -213,6 +213,93 @@ void Yi::Hurted(void) {
 
 涉及到底层的地址与指针，待补充
 
+### 接口
+
+多态最主要的作用就是用于实现接口，接口是一个独立的函数，其可接受不同类型的对象，然后可以针对对象的类型来完成一个功能。听起来接口好像就等同于函数的重载，但实际上这里的重载不是发生在接口函数上，而是发生在基类的虚函数上。
+
+现有如下需求，实现一台饮品制造机，要求其能制造咖啡和茶两种饮品，这两种饮品的制作过程都分为三步，前者为加咖啡、加水、加牛奶，后者为加茶业、加水、加枸杞。具体的代码实现如下，```Drinking.h```：
+
+```c++
+class AbcDrinking {
+public:
+	/*仅声明无实现的抽象函数，同时也是虚函数*/
+	virtual void addWater() = 0;    // 加水
+	virtual void addMat() = 0;    // 主料
+	virtual void addOther() = 0;    // 配料
+	void Make();
+};
+
+class Cof :public AbcDrinking {
+public:
+	void addWater();
+	void addMat();
+	void addOther();
+};
+
+class Tea :public AbcDrinking {
+public:
+	void addWater();
+	void addMat();
+	void addOther();
+};
+```
+
+&nbsp;```Drinking.cpp```：
+
+```c++
+#include<iostream>
+#include "Drinking.h"
+using namespace std;
+
+void AbcDrinking::Make() {
+	this->addWater();
+	this->addMat();
+	this->addOther();
+}
+
+void Cof::addWater() {
+	cout << "add water, ";
+}
+
+void Cof::addMat() {
+	cout << "add coffee, ";
+}
+
+void Cof::addOther() {
+	cout << "add milk." << endl;
+}
+
+void Tea::addWater() {
+	cout << "add mineral water, ";
+}
+
+void Tea::addMat() {
+	cout << "add tea, ";
+}
+
+void Tea::addOther() {
+	cout << "add wolfberry. " << endl;
+}
+```
+
+&nbsp;```main.cpp```：
+
+```c++
+#include<iostream>
+#include "Drinking.h"
+
+/*该函数构成一个接口*/
+void Producer(AbcDrinking* p) {
+	p->Make();
+}
+
+int main(void) {
+	Cof cof; Tea tea;
+	Producer(&cof); Producer(&tea);
+	return 0;
+}
+```
+
 ## 前置声明
 
 这是在写示例时遇到的一个坑。在声明英雄类时，英雄类之间产生了互相引用的问题，结果就是编译器一直报[C2061](https://docs.microsoft.com/zh-cn/cpp/error-messages/compiler-errors-1/compiler-error-c2061?f1url=https%3A%2F%2Fmsdn.microsoft.com%2Fquery%2Fdev16.query%3FappId%3DDev16IDEF1%26l%3DZH-CN%26k%3Dk(C2061)%26rd%3Dtrue%26f%3D255%26MSPPError%3D-2147217396&view=vs-2019)错误。原因就在于如下代码：
