@@ -1,0 +1,95 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a>    <ul>
+      <li><a href="#gan" id="markdown-toc-gan">GAN</a></li>
+      <li><a href="#problem" id="markdown-toc-problem">Problem</a></li>
+      <li><a href="#variation" id="markdown-toc-variation">Variation</a>        <ul>
+          <li><a href="#lsgan" id="markdown-toc-lsgan">LSGAN</a></li>
+          <li><a href="#dcgan" id="markdown-toc-dcgan">DCGAN</a></li>
+          <li><a href="#wgan" id="markdown-toc-wgan">WGAN</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>在实际实现GAN的时候才发现GAN的训练有好多坑，暂不表。</p>
+
+<h2 id="gan">GAN</h2>
+
+<p>对抗生成网络(Generative Adversarial Network)将博弈思想引入了神经网络的训练过程，GAN由两个网络模型构成：<strong>generator</strong>(G)和<strong>discriminator</strong>(D)，前者是一个生成模型，后者是一个判别模型。整个GAN的的训练过程是联合训练两个网络G和D，GAN的网络框架如下图所示：</p>
+
+<p><img src="/img/generator_and_discriminator1.png" alt="" /></p>
+
+<p><strong>Discriminator</strong></p>
+
+<p>GAN中D的任务很简单，就是判别数据是真是假，即D可以看做是一个二分类器。对于一个输入数据$x$，D会给出其对该数据的打分$D(x)$，该分值越大说明数据$x$为真的可能性越大，反之说明$x$是一个伪造数据。</p>
+
+<p><strong>Generator</strong></p>
+
+<p>生成器的原理可以参考之前的<a href="https://daya-jin.github.io/2019/02/09/AutoEncoder/#variational-auto-encoder">变分自编码文章</a>。简单来说，假设真实数据都是从一个隐变量分布$P(z)$中采样生成的，那么现实世界中任何的数据都可以表示成$f(P(z))$，其中$f(x)$为隐变量到数据的一个转换函数。生成模型的目标就是要学得真实数据与隐变量之间的一个映射关系$f(x)$。</p>
+
+<p>GAN的思想很简单，首先假设生成模型所生成的数据服从一个隐变量分布$P_{g}$，真实数据分布为$P_{r}$。GAN的目标有两个：D要能区分出真实数据与伪造数据，即$f(P_{g}(z_{fake}))$与$f(P_{r}(z_{real}))$之间的区别；G要能产生骗过D的生成数据。换句话说，优化目标有两个：</p>
+
+<ol>
+  <li>最小化判别器对混合数据的判别损失(判别器角度)</li>
+  <li>最大化判别器对伪造数据的判别损失(生成器角度)</li>
+</ol>
+
+<p>易得$x_{real}=f(P_{r}(z_{real}))$，$x_{fake}=f(P_{g}(z_{fake}))$，那么GAN的损失函数可以写成：</p>
+
+\[\min\limits_{G}\max\limits_{D}V(D,G)=\mathbb{E}_{x\sim{P_{r}}}[\log{D(x)}]+\mathbb{E}_{x\sim{P_{g}}}[\log{(1-D(x))}]\]
+
+<p>下面推导优化过程：</p>
+
+\[\begin{aligned}
+    V(D,G)&amp;=\mathbb{E}_{x\sim{P_{r}}}[\log{D(x)}]+\mathbb{E}_{x\sim{P_{g}}}[\log{(1-D(x))}] \\
+    &amp;=\int_{x}P_{r}(x)\log{D(x)}\,dx+\int_{x}P_{g}(x)\log(1-D(x))\,dx \\
+\end{aligned}\]
+
+<p>首先是$\max\limits_{D}V(D,G)$，令上述导数为零求出最优判别器：</p>
+
+\[\begin{aligned}
+    \frac{\partial{V(D,G)}}{\partial{D}}&amp;=\frac{P_{r}}{D}-\frac{P_{g}}{1-D}=0 \\
+    D^{*}&amp;=\frac{P_{r}}{P_{r}+P_{g}} \\
+\end{aligned}\]
+
+<p>代入最优判别器得到新的目标函数：</p>
+
+\[\begin{aligned}
+    V(D^{*},G)&amp;=\int_{x}P_{r}\log\frac{P_{r}}{P_{r}+P_{g}}+P_{g}\log\frac{P_{g}}{P_{r}+P_{g}}\,dx \\
+    &amp;=\int_{x}P_{r}\log\frac{P_{r}}{2\frac{P_{r}+P_{g}}{2}}+P_{g}\log\frac{P_{g}}{2\frac{P_{r}+P_{g}}{2}}\,dx \\
+    &amp;=\int_{x}P_{r}\log\frac{P_{r}}{\frac{P_{r}+P_{g}}{2}}+P_{g}\log\frac{P_{g}}{\frac{P_{r}+P_{g}}{2}}\,dx-2\log{2} \\
+    &amp;=KL(P_{r}\vert\vert(P_{r}+P_{g}))+KL(P_{g}\vert\vert(P_{r}+P_{g}))-2\log{2} \\
+    &amp;=2JS(P_{r}\vert\vert{P_{g}})-2\log{2} \\
+\end{aligned}\]
+
+<p>$\min\limits_{G}V(D^{<em>},G)$等价于$\min{JS(P_{r}\vert\vert{P_{g}})}$，最优解$G^{</em>}$为$P_{r}=P_{g}$。</p>
+
+<p>最后，在GAN的实现上，D与G是交替训练的，每一轮只训练其中一个网络。具体过程如下：</p>
+
+<ol>
+  <li>固定G的参数，取一批真实图片$X_{r}$，再生成一批伪造图片$X_{g}$，训练D的分辨能力；</li>
+  <li>固定D的参数，取一批真实图片$X_{r}$，再生成一批伪造图片$X_{g}$，训练D的伪造能力。</li>
+</ol>
+
+<p>一个简单的GAN实现<a href="https://github.com/Daya-Jin/DL_for_learner/blob/master/GAN/VanillaGAN.ipynb">见此</a>。</p>
+
+<h2 id="problem">Problem</h2>
+
+<p>GAN因为包含两个互相交互的网络，在训练上非常困难。设想一下GAN最初的情况，D只能产生随机噪声，因此即使是一个结构件的G也能很轻易的分辨real与fake数据。主要问题有两个：</p>
+
+<ul>
+  <li>Mode collapse: 模式崩塌。指G只学到了真实数据中的某一部分潜在分布，因而导致G只能生成部分样本种类或单种类样本。如在MNIST数据及上表现为只能生成数字$1$或数字$8$。</li>
+  <li>Unbalance: 不平衡。指D与G之间的不平衡，其中一者的能力过强而导致另一者无法再学到东西。这种情况与GAN的思想不符，一个优秀的GAN应该满足两者互相制衡。</li>
+</ul>
+
+<h2 id="variation">Variation</h2>
+
+<h3 id="lsgan">LSGAN</h3>
+
+<h3 id="dcgan">DCGAN</h3>
+
+<h3 id="wgan">WGAN</h3>
+:ET

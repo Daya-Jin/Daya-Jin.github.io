@@ -1,0 +1,36 @@
+I"{<ul id="markdown-toc">
+  <li><a href="#lightgbm" id="markdown-toc-lightgbm">LightGBM</a>    <ul>
+      <li><a href="#histogram" id="markdown-toc-histogram">Histogram</a></li>
+      <li><a href="#leaf-wise-tree-growth" id="markdown-toc-leaf-wise-tree-growth">Leaf-wise tree growth</a></li>
+      <li><a href="#gradient-based-one-side-sampling" id="markdown-toc-gradient-based-one-side-sampling">Gradient-based One-Side Sampling</a></li>
+      <li><a href="#exclusive-feature-bundling" id="markdown-toc-exclusive-feature-bundling">Exclusive Feature Bundling</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="lightgbm">LightGBM</h1>
+
+<p>因为前文已经详细讲过XGB的原理，此文只对照XGB做一下两者的比较。</p>
+
+<h2 id="histogram">Histogram</h2>
+
+<p>XGB中使用了一个近似分割算法来寻找某一特征中的分割位置，首先将特征进行排序，再根据二阶梯度搜索一个最佳的百分位分割点。而lightGBM中对这一过程的处理更加粗略，对特征做分箱操作(形成一个直方图)，然后在各箱之间寻找一个最优分割点。很明显后者的处理方式找到的是一个很粗略的分割位置，相比于XGB必然损失了精度，但是从另一个角度来看，此举起到了一定的正则化效果。</p>
+
+<p>在树的分裂过程时，父节点分裂成两个子节点，不难得到两子节点的直方图的和等于父节点的直方图。那么父节点的直方图是已经计算过的，然后只需要再计算两子节点中较小节点的直方图，那么另一个子节点的直方图就可以通过做减法得到。</p>
+
+<p>LightGBM的分箱操作相当于是对数据做了特征离散化，也会减少存储上的开销。</p>
+
+<h2 id="leaf-wise-tree-growth">Leaf-wise tree growth</h2>
+
+<p>我们之前在讲树模型的生成时，默认其在实现上的策略是Level-wise的，意思是尽量会去分裂同一层的节点，然后再分裂下一层的节点，知道某一边的节点分裂增益小于阈值或样本数小于阈值。Level-wise的优点在于可并行分裂，但是他不能保证在分裂次数相同的情况下产生最大的增益贡献。比如左分支先分裂产生两个叶子节点，那么此时有三个分裂选择，分裂左分支的两个子节点或者分裂右分支(假设均符合分裂条件)。Level-wise策略会优先选择分裂右分支，Leaf-wise策略会优先选择增益最大的节点进行分裂，所以在分裂同样次数的条件下，LGB的loss(梯度)会比XGB降低得更多。</p>
+
+<h2 id="gradient-based-one-side-sampling">Gradient-based One-Side Sampling</h2>
+
+<p>基于梯度的单边采样GOSS，该策略跟Adaboost有点相似。在Adaboost中，每轮迭代会降低正确分类样本的权重，加大错误分类样本的权重，GOSS使用了类似的做法。每次分裂时，并不会使用节点中全部的样本去计算，而是选出大部分梯度下降比较大的样本与小部分梯度下降比较小的样本进行下一次分裂的计算，当然相对应的，在计算分裂增益时，梯度下降较小的部分样本梯度需要做放大操作。</p>
+
+<p>比如有5W条样本，在某次分裂时，计算得到其中5000条样本的梯度下降的比较多，而其他45000条样本梯度下降得比较少，那么选取所有5000条样本，再从45000中随机选取一部分样本做增益计算来指导下一次分裂。因为做了样本采样，所以计算的增益需要做相应的放大。</p>
+
+<h2 id="exclusive-feature-bundling">Exclusive Feature Bundling</h2>
+
+<p>当数据存在稀疏特征的时候，部分数据特征可能存在互斥关系，这就为特征合并提供了可能。(待补充)</p>
+:ET

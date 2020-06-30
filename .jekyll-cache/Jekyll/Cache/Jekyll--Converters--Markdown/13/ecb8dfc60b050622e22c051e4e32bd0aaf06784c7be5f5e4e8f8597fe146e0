@@ -1,0 +1,152 @@
+I"e.<ul id="markdown-toc">
+  <li><a href="#ensemble-learning" id="markdown-toc-ensemble-learning">Ensemble Learning</a>    <ul>
+      <li><a href="#bagging" id="markdown-toc-bagging">Bagging</a>        <ul>
+          <li><a href="#树模型bagging" id="markdown-toc-树模型bagging">树模型+bagging</a></li>
+        </ul>
+      </li>
+      <li><a href="#random-forest" id="markdown-toc-random-forest">Random Forest</a></li>
+      <li><a href="#boosting" id="markdown-toc-boosting">Boosting</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="ensemble-learning">Ensemble Learning</h1>
+
+<h2 id="bagging">Bagging</h2>
+
+<p>前文说到树模型不稳定，那么怎么减少模型的variance？假设有$n$个独立变量$Z_{1}$、$Z_{2}$、……、$Z_{n}$，每个变量的方差都为$\sigma^{2}$，那么变量$\bar{Z}$的方差为$\sigma^{2}/n$，可以看到均化可以减少方差。</p>
+
+<p><strong>Bagging</strong>(bootstrap aggregation)的思想就是在原数据集中进行多次抽样得到多个训练子集，再在这些训练子集上分别训练多个模型，最后把这些模型的预测结果均化即可。</p>
+
+<p>假设有训练集$X$，经过$B$轮有放回的抽样得到$B$个训练子集$[X_{1}, X_{2}, …, X_{B}]$，分别在这些训练子集上训练得到$B$个模型$[f_{1}(x), f_{2}(x), …, f_{B}(x)]$，然后将所有模型的输出均化作为预测结果，即：</p>
+
+\[\hat{Y}_{bagging}=\frac{1}{B}\sum_{i=1}^{B}\hat{f}_{i}(x)\]
+
+<p>对于分类问题，预测输出是无量纲的离散值，无法均化，采用投票机制即可。</p>
+
+<p>Bagging算法中模型的个数$B$不是一个很重要的参数，因为$B$在过大时也不会发生过拟合。Bagging算法中最关键的一环就是采样，有以下几种策略：</p>
+
+<ul>
+  <li>随机选取一个子集，叫做<strong>Pasting</strong></li>
+  <li>有放回的抽样得到一个子集，叫做<strong>Bagging</strong>，可以证明有放回的抽样最多只会抽到2/3的样本</li>
+  <li>随机选取一个特征子集，叫做<strong>随机子空间</strong>(subspace sampling)</li>
+  <li>如果同时随机选取样本子集与特征子集，叫做<strong>Random Patches</strong></li>
+</ul>
+
+<p>通常使用的就是bagging抽样，注意到使用有放回抽样的bagging算法最多只会抽样原样本集的2/3数据，那么剩下的1/3数据就可以用来做线下验证，所以使用bagging算法的模型不需要做CV，直接使用未被抽样的数据来做验证，这种策略叫做<strong>包外误差估计</strong>(out-of-bag Error Estimation)。</p>
+
+<h3 id="树模型bagging">树模型+bagging</h3>
+
+<p>决策树模型原本的优点就是它的强解释性，而缺点就是模型有较大的方差，而在使用bagging之后，其解释性被减弱了，但是其方差也被大大降低了，这是一种权衡策略。另一方面，虽然bagging算法使得决策树模型不再具有可解释性，但是却可以得出一个<strong>特征重要性</strong>(feature importance)。在使用bagging算法生成树时，可以记录每个特征在$B$棵树以该特征分裂时所降低的一个平均误差或平均基尼指数，然后以该值排序就可以得到一个特征重要性排名。</p>
+
+<h2 id="random-forest">Random Forest</h2>
+
+<p>假设数据中有一个或数个强特征，那么在bagging算法中，虽然每棵树使用了不同的数据子集，但是每棵树在做顶层分裂时总是会根据最强的那几个特征来做分裂，这样就造成了bagging中每棵树的相似度很高，学到的内容相似，树之间有很高的相关性。对不满足$iid$条件的变量做均化并不能降低太多的方差。前文提到了一种同时选取样本子集与特征子集的抽样方法，那么可以借鉴Random Patches的思想来降低树之间的相关性，这种策略叫做<strong>解耦</strong>(decorrelate)。</p>
+
+<p>假定训练集$X$有$n$个特征$Z_{1}$、$Z_{2}$、……、$Z_{n}$，经过$B$轮有放回的抽样得到$B$个训练子集$[X_{1}, X_{2}, …, X_{B}]$，同样在这$B$个训练集上训练$B$个树模型$[f_{1}(x), f_{2}(x), …, f_{B}(x)]$，Random Forest与Bagging唯一的不同就在于每个树模型的训练过程。bagging在每棵树生成时会在当前样本子集所有特征中找一个最佳分割点进行分裂，而random forest在每次分裂时只会随机选取一个特征子集做分裂，随机选取的特征子集大小一般为$p=\sqrt{n}$。</p>
+
+<p>实现指导：<a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestClassifier.ipynb">分类</a>   <a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestRegressor.ipynb">回归</a></p>
+
+<p>完整代码：<a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestClassifier.py">分类</a>   <a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/RandomForestRegressor.py">回归</a></p>
+
+<h2 id="boosting">Boosting</h2>
+
+<p>不同于bagging，boosting算法是一种串行修正算法，在同一个训练集上串行训练多个模型，每一个模型会针对上一个模型的错误进行修正。下面首先以二分类的AdaBoost做示例讲解。</p>
+
+<p><strong>AdaBoost</strong></p>
+
+<p>现有训练集$X$与$Y$，数据共有$n$个样本$[x_{1},x_{2},…,x_{n}]$，AdaBoost算法流程如下：</p>
+
+<ol>
+  <li>初始化数据样本的权重，所有样本权重相等，$w_{i}=\frac{1}{n}$</li>
+  <li>在带权数据集上训练一个模型$f_{1}(x)$，并计算该模型在训练集上的加权平均误差$err_{1}=\frac{\sum_{i=1}^{n}w_{i}I(y_{i}{\ne}f_{1}(x_{i}))}{\sum_{i=1}^{n}w_{i}}$</li>
+  <li>根据模型的表现给模型赋一个权重系数$\alpha_{1}={\log}(\frac{1}{err_{1}}-1)$</li>
+  <li>根据模型的表现给样本重新分配权重，$w_{i}:=w_{i}{\cdot}exp[\alpha_{1}{\cdot}I(y_{i}{\ne}f_{1}(x_{i}))]$</li>
+  <li>重复2,3,4步，串行训练得到$k$个模型$[f_{1}(x),f_{2}(x),…,f_{k}(x)]$，整个算法的输出为</li>
+</ol>
+
+\[F(x)=sign(\sum\limits_{i=1}^{k}\alpha_{i}f_{i}(x))\]
+
+<p>需要注意的有两点：</p>
+
+<p>在第3步计算模型权重时，注意到当$err=\frac{1}{2}$(随机猜)时$\alpha=0$，当$err&gt;\frac{1}{2}$时$\alpha&lt;0$，当$err&lt;\frac{1}{2}$时$\alpha&gt;0$，即对那些好于随机猜的模型会赋予一个正权重，而对那些还不如随机猜的模型赋予一个负权重；</p>
+
+<p>另一个，在对样本重新分配权重时，注意到当$\alpha_{1}{\cdot}I(y_{i}{\ne}f_{1}(x_{i}))&gt;0$时，样本的权重才会增大，反之会减小，而等于零时则权重不变。且注意到AdaBoost只会改变被误分类样本的权重，而在需要改变权重$I(y_{i}{\ne}f_{1}(x_{i}))=1$的条件下，样本权重的更改量只取决于模型权重$\alpha$，而模型权重$\alpha$又取决于模型的分类误差$err$，所以可以看出：减小那些被$err&gt;\frac{1}{2}$模型误分类样本的权重，增大那些被$err&lt;\frac{1}{2}$模型误分类样本的权重。</p>
+
+<p><a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/AdaBoostClassifier.ipynb">实现指导</a></p>
+
+<p><a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/ensemble/AdaBoostClassifier.py">完整代码</a></p>
+
+<p><strong>增量Boosting</strong></p>
+
+<p>增量Boosting是boosting的一个变种算法，该算法在同一个数据集上同样串行训练得到$k$个模型，最后整个算法的输出是这些模型的线性加权：</p>
+
+\[F(x)=\sum_{i=1}^{k}\beta_{i}f_{i}(x;\theta_{i})\]
+
+<p>那么其优化问题可表示为：</p>
+
+\[arg \min\limits_{\beta,\theta} \sum_{i=1}^{n}L(y_{i},\sum_{j=1}^{k}\beta_{j}f_{j}(x_{i};\theta_{j}))\]
+
+<p>其中$L(y_{i},f(x_{i}))$为损失计算函数。上述优化问题计算复杂很难解，下面介绍一种基于贪心策略的优化方法。</p>
+
+<p>基于贪心策略的增量Boosting算法流程如下所述：</p>
+
+<ol>
+  <li>初始化一个空模型$f_{0}(x)=0$</li>
+  <li>以已有模型为基础，训练一个增量模型$b_{1}(x;\theta_{1})$，令当前模型为$f_{1}(x)=f_{0}(x)+\beta_{1}b_{1}(x;\theta_{1})$</li>
+  <li>当前模型的训练问题可表示成：$arg \min\limits_{\beta_{1},\theta_{1}}\sum\limits_{i=1}^{n}L(y_{i},f_{0}(x)+\beta_{1}b_{1}(x_{i};\theta_{1}))$</li>
+  <li>重复第2,3步，最后得到$k$个模型$[b_{1}(x),b_{2}(x),…,b_{k}(x)]$，整个算法模型为$f(x)=\sum\limits_{i=1}^{k}\beta_{i}b_{i}(x;\theta_{i})$</li>
+</ol>
+
+<p>上述增量boosting算法也叫做<strong>前向增量建模</strong>(Forward Stagewise Additive Modeling)。然后以一个简单例子来进一步探讨此算法。</p>
+
+<p>取损失函数为平方误差$L(y_{i},f(x_{i}))=(y_{i}-f(x_{i}))^{2}$，那么在增量boosting第$m$轮时的损失函数可以写成：</p>
+
+\[\begin{aligned}
+    \sum_{i=1}^{n}L(y_{i},f_{m}(x_{i}))&amp;=\sum_{i=1}^{n}L(y_{i},f_{m-1}(x_{i})+\beta_{m}b_{m}(x_{i};\theta_{m})) \\
+    &amp;=\sum_{i=1}^{n}(y_{i}-f_{m-1}(x_{i})-\beta_{m}b_{m}(x_{i};\theta_{m}))^{2} \\
+    &amp;=\sum_{i=1}^{n}(r_{i,m-1}-\beta_{m}b_{m}(x_{i};\theta_{m})^{2} \\
+    &amp;=\sum_{i=1}^{n}L(r_{i,m-1},\beta_{m}b_{m}(x_{i};\theta_{m}) \\
+\end{aligned}\]
+
+<p>其中，$r_{i,m-1}$称为第$m-1$轮的模型对第$i$个样本的预测残差。通过上述变换可以看出，增量boosting算法第$m$轮所训练的增量模型$\beta_{m}b_{m}(x_{i};\theta_{m})$拟合的其实是上一轮模型的残差。</p>
+
+<p><strong>AdaBoost等价于使用指数损失函数的增量Boosting</strong></p>
+
+<p>取损失函数为指数损失函数：</p>
+
+\[L(y,\hat{y})=exp(-y{\cdot}\hat{y})\]
+
+<p>那么增量boosting问题可以写成：</p>
+
+\[(\beta_{m},\theta_{m})=\arg\min\limits_{\beta,\theta}\sum\limits_{i=1}^{n}exp[-y_{i}(f_{m-1}(x_{i})+\beta_{m}b_{m}(x_{i};\theta_{m}))]\]
+
+<p>待补充</p>
+
+<p><strong>GBM</strong></p>
+
+<p>在之前所讲过的一系列模型中，对于参数优化问题，有一种通用解法就是梯度下降法：</p>
+
+\[\theta:=\theta-\alpha\frac{\partial L(y,f(x))}{\partial f(x)}\]
+
+<p>而增量boosting模型可以写成：</p>
+
+\[f(x):=f(x)+{\beta}b(x)\]
+
+<p>仅仅受表达形式上的启发，就可以很容易想到：把模型$f(x)$当做需要优化的参数，令每一轮的新模型$b(x)$去拟合负梯度，那么就可以借鉴梯度下降法的思想来得到一个最优或次优模型，由此引出<strong>梯度提升机</strong>(Gradient Boosting Machine)的概念。增量boosting模型在第$m$轮时的损失可以写成：</p>
+
+\[\begin{aligned}
+    \sum_{i=1}^{N}L(y_{i},f_{m}(x_{i}))&amp;=\sum_{i=1}^{N}L(y_{i},f_{m-1}(x_{i})+\beta_{m}b_{m}(x_{i};\theta_{m})) \\
+    &amp;=\sum\limits_{i=1}^{N}L(y_{i},f_{m-1}(x_{i}))+\beta_{m}\sum\limits_{i=1}^{N}g_{i,m}b_{m}(x_{i};\theta_{m}) \\
+\end{aligned}\]
+
+<p>其中$g_{i,m}=\frac{\partial{L(y_{i},f_{m-1}(x_{i}))}}{\partial{f_{m-1}(x_{i})}}$，$L(y_{i},f_{m-1}(x_{i}))$称为伪残差。在上式中，$\sum_{i=1}^{N}L(y_{i},f_{m-1}(x_{i}))$是常数，要想最小化$\sum_{i=1}^{N}L(y_{i},f_{m}(x_{i}))$，易得$b_{m}(x_{i};\theta_{m})$必须要跟$g_{i,m}$异号，这样才能修正上一轮的错误以减小损失值。受上面梯度下降法的启发，令：</p>
+
+\[b_{m}(x_{i};\theta_{m})=-g_{i,m}\]
+
+<p>即训练一个新模型去拟合伪残差关于上一轮模型$f_{m-1}$的负梯度，那么GBM算法的优化问题可以写成：</p>
+
+\[\theta_{m}=\arg\min\limits_{\theta}\sum\limits_{i=1}^{n}L(g_{i,m},b_{m}(x_{i};\theta_{m}))\]
+
+<p>未出现的参数$\beta_{m}$即学习率。特别地，当每轮的基模型使用树模型时，这种GBM被称为<strong>梯度提升树</strong>(Gradient Boosted Decision Trees)。在GBDT理论中，对于树的基模型怎么生成并没有做具体规定，不过最常用的基模型还是CART，背后的核心思想是梯度下降法。</p>
+:ET

@@ -1,0 +1,244 @@
+I"+w<ul id="markdown-toc">
+  <li><a href="#友元与运算符重载" id="markdown-toc-友元与运算符重载">友元与运算符重载</a></li>
+  <li><a href="#模版" id="markdown-toc-模版">模版</a>    <ul>
+      <li><a href="#函数模版" id="markdown-toc-函数模版">函数模版</a></li>
+      <li><a href="#类模板" id="markdown-toc-类模板">类模板</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="友元与运算符重载">友元与运算符重载</h2>
+
+<p>运算符重载等同于函数重载，原生运算符仅支持少数几个数据类型，重载运算符可支持自定义类型。现定义一个二维向量类：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Vec</span>
+<span class="p">{</span>
+	<span class="kt">double</span> <span class="n">x</span><span class="p">;</span>
+	<span class="kt">double</span> <span class="n">y</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="n">Vec</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Vec</span><span class="o">::</span><span class="n">Vec</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>要求为该类实现乘法，有三种：<code class="language-plaintext highlighter-rouge">Vec*Vec</code>、<code class="language-plaintext highlighter-rouge">Vec*x</code>和<code class="language-plaintext highlighter-rouge">x*Vec</code>。前两种乘法可直接使用成员函数来实现，如下所示：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Vec</span> <span class="n">Vec</span><span class="o">::</span><span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Vec</span> <span class="n">res</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">*</span> <span class="n">v</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">y</span> <span class="o">*</span> <span class="n">v</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Vec</span> <span class="n">Vec</span><span class="o">::</span><span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="kt">double</span> <span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Vec</span> <span class="n">res</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">*</span> <span class="n">r</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">y</span> <span class="o">*</span> <span class="n">r</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>问题是第三种。第三种乘法<code class="language-plaintext highlighter-rouge">x*Vec</code>因为向量类在右边，所以不能使用成员函数来实现，但是使用非成员函数的话会存在访问权限问题。C++中友元关键字<code class="language-plaintext highlighter-rouge">friend</code>修饰的函数和对象可访问类的私有属性。因此<code class="language-plaintext highlighter-rouge">Vec.h</code>内容为：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Vec</span>
+<span class="p">{</span>
+	<span class="kt">double</span> <span class="n">x</span><span class="p">;</span>
+	<span class="kt">double</span> <span class="n">y</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="n">Vec</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
+	<span class="n">Vec</span> <span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">);</span>    <span class="c1">// Vec*Vec</span>
+	<span class="n">Vec</span> <span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="kt">double</span> <span class="n">r</span><span class="p">);</span>    <span class="c1">// Vec*r</span>
+	<span class="k">friend</span> <span class="n">Vec</span> <span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="kt">double</span> <span class="n">r</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">);</span>    <span class="c1">// r*Vec, 友元函数可访问私有属性</span>
+	<span class="k">friend</span> <span class="n">ostream</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">ostream</span><span class="o">&amp;</span> <span class="n">cout</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">);</span>    <span class="c1">// 重载输出</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>而<code class="language-plaintext highlighter-rouge">Vec.cpp</code>内容为：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Vec.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="n">Vec</span><span class="o">::</span><span class="n">Vec</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Vec</span> <span class="n">Vec</span><span class="o">::</span><span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Vec</span> <span class="n">res</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">*</span> <span class="n">v</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">y</span> <span class="o">*</span> <span class="n">v</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Vec</span> <span class="n">Vec</span><span class="o">::</span><span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="kt">double</span> <span class="n">r</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Vec</span> <span class="n">res</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">*</span> <span class="n">r</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">y</span> <span class="o">*</span> <span class="n">r</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Vec</span> <span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="kt">double</span> <span class="n">r</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Vec</span> <span class="n">res</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">v</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+	<span class="n">res</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">v</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">ostream</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">ostream</span><span class="o">&amp;</span> <span class="n">cout</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vec</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"&lt;"</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">", "</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;&lt;</span> <span class="s">"&gt;"</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">cout</span><span class="p">;</span>    <span class="c1">// 为了支持连续输出</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="模版">模版</h2>
+
+<h3 id="函数模版">函数模版</h3>
+
+<p>当函数需要能够支持多种数据类型时，重载是一种策略，重载的问题在于需要为每一种数据类型都写一套函数代码。如果对于不同的数据类型，函数的逻辑是一样，函数重载就等同于写重复代码，对于这种情况，C++提供了模版机制，可将不同数据类型下的函数逻辑抽象成模版，而具体的类型待指定。</p>
+
+<p>函数模版与函数重载的区别：</p>
+<ul>
+  <li>函数模版对不同数据类型的处理逻辑是一模一样的，而重载函数的逻辑可以不一样；</li>
+  <li>在参数数量不同或者逻辑不同的情况下只能使用函数重载，否则可以使用函数模版；</li>
+  <li>模版也是可重载的，主要解决参数数量不同和逻辑不同的问题。</li>
+</ul>
+
+<p>比如说交换函数<code class="language-plaintext highlighter-rouge">Swap(a,b)</code>，不管参数属于整形、浮点、字符、还是其他自定义的数据类型，交换两个物体的函数逻辑是一摸一样的，因此可以将该函数抽象成模版。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="nf">Swap</span><span class="p">(</span><span class="n">T</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">T</span><span class="o">*</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">T</span> <span class="n">tmp</span> <span class="o">=</span> <span class="o">*</span><span class="n">a</span><span class="p">;</span>
+	<span class="o">*</span><span class="n">a</span> <span class="o">=</span> <span class="o">*</span><span class="n">b</span><span class="p">;</span>
+	<span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+	<span class="n">Swap</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="kt">float</span> <span class="n">c</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">f</span><span class="p">;</span>
+	<span class="kt">float</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">2.0</span><span class="n">f</span><span class="p">;</span>
+	<span class="n">Swap</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">);</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">c</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">d</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="类模板">类模板</h3>
+
+<p>模版这里有一个坑：<strong>模版函数的声明与实现必须都在头文件中</strong>，这是微软给出的<a href="https://docs.microsoft.com/zh-cn/cpp/cpp/source-code-organization-cpp-templates?view=vs-2019">建议</a>，为什么要这么做的原因<a href="https://isocpp.org/wiki/faq/templates#templates-defn-vs-decl">见此</a>。下面实现一个弱智的栈类，<code class="language-plaintext highlighter-rouge">Stk.h</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="k">class</span> <span class="nc">Stk</span> <span class="p">{</span>
+	<span class="n">T</span><span class="o">*</span> <span class="n">base</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">cap</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">size</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="n">Stk</span><span class="p">(</span><span class="kt">int</span> <span class="n">cap</span><span class="p">);</span>
+	<span class="n">Stk</span><span class="p">(</span><span class="k">const</span> <span class="n">Stk</span><span class="o">&amp;</span> <span class="n">arr</span><span class="p">);</span>    <span class="c1">// 拷贝构造</span>
+	<span class="o">~</span><span class="n">Stk</span><span class="p">();</span>
+	<span class="n">Stk</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span> <span class="p">(</span><span class="k">const</span> <span class="n">Stk</span><span class="o">&amp;</span> <span class="n">arr</span><span class="p">);</span>    <span class="c1">// 赋值重载</span>
+
+	<span class="kt">void</span> <span class="n">append</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">x</span><span class="p">);</span>
+	<span class="n">T</span> <span class="n">top</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">Stk</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">Stk</span><span class="p">(</span><span class="kt">int</span> <span class="n">cap</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span> <span class="o">=</span> <span class="n">cap</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="p">[</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">Stk</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">Stk</span><span class="p">(</span><span class="k">const</span> <span class="n">Stk</span><span class="o">&amp;</span> <span class="n">arr</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span> <span class="o">=</span> <span class="n">arr</span><span class="p">.</span><span class="n">cap</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="n">arr</span><span class="p">.</span><span class="n">size</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="p">[</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span><span class="p">];</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">.</span><span class="n">base</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">Stk</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;::~</span><span class="n">Stk</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">delete</span><span class="p">[]</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span><span class="p">;</span>
+		<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+		<span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">Stk</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span> <span class="n">Stk</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;::</span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">Stk</span><span class="o">&amp;</span> <span class="n">arr</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;~</span><span class="n">Arr</span><span class="p">();</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span> <span class="o">=</span> <span class="n">arr</span><span class="p">.</span><span class="n">cap</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="n">arr</span><span class="p">.</span><span class="n">size</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span> <span class="o">=</span> <span class="k">new</span> <span class="n">T</span><span class="p">[</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span><span class="p">];</span>
+
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">.</span><span class="n">base</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="n">Stk</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">append</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">==</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">cap</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">return</span><span class="p">;</span>
+	<span class="p">}</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span><span class="p">[</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">T</span> <span class="n">Stk</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">top</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">base</span><span class="p">[</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span>    <span class="c1">// 不考虑异常</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">main.h</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include&lt;typeinfo&gt;
+#include "Stk.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">Stk</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">Stk</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+	<span class="n">s1</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="n">Stk</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">Stk</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">s1</span><span class="p">);</span>
+	<span class="n">s2</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="n">Stk</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="n">s2</span><span class="p">;</span>
+	<span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">s3</span><span class="p">.</span><span class="n">top</span><span class="p">()</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+
+	<span class="n">Stk</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">s4</span> <span class="o">=</span> <span class="n">Stk</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+	<span class="n">s4</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.2</span><span class="n">f</span><span class="p">);</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">s4</span><span class="p">.</span><span class="n">top</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+:ET

@@ -1,0 +1,116 @@
+I"N#<ul id="markdown-toc">
+  <li><a href="#demand" id="markdown-toc-demand">Demand</a></li>
+  <li><a href="#supply" id="markdown-toc-supply">Supply</a></li>
+  <li><a href="#equilibrium" id="markdown-toc-equilibrium">Equilibrium</a></li>
+  <li><a href="#elasticity" id="markdown-toc-elasticity">Elasticity</a>    <ul>
+      <li><a href="#price-elasticity-of-demand" id="markdown-toc-price-elasticity-of-demand">Price Elasticity of Demand</a></li>
+    </ul>
+  </li>
+  <li><a href="#surplus" id="markdown-toc-surplus">Surplus</a></li>
+  <li><a href="#international-trade" id="markdown-toc-international-trade">International Trade</a></li>
+</ul>
+
+<p>一个最简单的市场模型图如下所示：</p>
+
+<p><img src="/img/2019-10-02_20-56-46.bmp" alt="" /></p>
+
+<p>在商品与服务市场，企业是卖家，而个人是买家，前者为后者提供商品与服务；而在生产要素市场，企业是买家，个人是卖家，后者为前者提供劳动力。在市场中会有很多买家和卖家，双方均会对市场中商品的价格产生影响，于是就形成了市场竞争。</p>
+
+<h2 id="demand">Demand</h2>
+
+<p>买方愿意购买商品的数量称为需求量，展示需求量与价格之间关系的表称为需求表，通常需求量为横轴而价格为纵轴。</p>
+
+<p><img src="/img/2019-10-02_21-11-43.bmp" alt="" /></p>
+
+<p>当某一个事件改变了<strong>任意价格</strong>下的需求量时，称为需求曲线变更(Shifts in the Demand Curve)。最简单的例子，假如气温升高的话，那么对于<strong>任意价位</strong>冰激凌的需求量都会变大；反之气温下降的话，那么任意价位冰激凌的需求量都会减少。这种变化体现在需求表上的话就分别对应着需求曲线的右移与左移。</p>
+
+<p><img src="/img/2019-10-02_21-23-22.bmp" alt="" /></p>
+
+<p>注意曲线变更不是商品价格变动导致的，而是由于别的事件导致的。比如说政府想要控制香烟的需求量，那么有两种办法。一是进行健康宣传，这自然会降低各阶层烟民对于香烟的需求量；二是对香烟加税，这会迫使香烟公司提高香烟的价格。这两种措施中，前者会导致需求曲线变更，而后者不会，因为后者只是单纯的提高了香烟的价格。两者的区别见下图。</p>
+
+<p><img src="/img/2019-10-02_21-39-40.bmp" alt="" /></p>
+
+<p>会导致需求变更的原因有很多，以下为一些例子。</p>
+
+<ul>
+  <li>收入。收入会影响到个人对于商品的需求。当个人收入降低时，会减少个人对于<strong>正常商品</strong>的需求，并增加个人对于<strong>劣质商品</strong>的需求；</li>
+  <li>相关商品的价格。如果两种商品A和B互为竞争关系，则A价格的上升会增加B的需求量，B价格的上升会增加A的需求量。若A、B互为补充关系，则A价格的上升会减少B的需求量，反之亦然。</li>
+</ul>
+
+<h2 id="supply">Supply</h2>
+
+<p>卖方愿意提供商品的数量称为供给量，展示供给量与价格之间关系的表称为需求表，通常供给量为横轴而价格为纵轴。</p>
+
+<p><img src="/img/2019-10-02_21-49-58.bmp" alt="" /></p>
+
+<p>当某一个事件改变了<strong>任意价格</strong>下的供给量时，称为供给曲线变更(Shifts in the Supply Curve)。假如冰激凌上游的糖的价格减少了，那么这会导致冰激凌的利润上升，在同等价格的条件下，商家自然愿意提供更多的冰激凌；反之糖的价格上涨，商家就不愿意提供原价格那么多的冰激凌。这两种情况分别的对应着供给曲线的右移与左移。</p>
+
+<p><img src="/img/2019-10-02_21-51-49.bmp" alt="" /></p>
+
+<h2 id="equilibrium">Equilibrium</h2>
+
+<p>当把需求曲线与供给曲线同时展现，两曲线会相交于一点——市场的<strong>平衡点</strong>。</p>
+
+<p><img src="/img/2019-10-02_22-21-18.bmp" alt="" /></p>
+
+<p>如果市场价格高于平衡价格时，会出现<strong>过剩</strong>(surplus)；反之若市场价格低于平衡价格则会出现<strong>短缺</strong>(shortage)。</p>
+
+<p><img src="/img/2019-10-03_12-55-49.bmp" alt="" /></p>
+
+<h2 id="elasticity">Elasticity</h2>
+
+<p><strong>弹性</strong>指的是需求量或供给量随决定因素变化而变化的量。</p>
+
+<h3 id="price-elasticity-of-demand">Price Elasticity of Demand</h3>
+
+<p><strong>需求的价格弹性</strong>(Price Elasticity of Demand)衡量的是需求量随价格的变化，其计算方式为：</p>
+
+\[\epsilon=\frac{\Delta\% \ in \ Q}{\Delta\% \ in \ P}\]
+
+<p>其表示的是某商品在价格变化一定比例的情况下，需求量的变化比例。假设要计算需求曲线中两点$(Q_{1},P_{1})$和$(Q_{2},P_{2})$的需求价格弹性，需要使用中点法计算，即在计算百分比时使用两点之间的中值作为基准:</p>
+
+\[\epsilon=\frac{(Q_{2}-Q_{1})/[(Q_{1}+Q_{2})/2]}{(P_{2}-P_{1})/[(P_{1}+P_{2})/2]}\]
+
+<p>如果需求弹性大于$1$则认为该需求是<strong>弹性</strong>(elastic)的，如果需求弹性等于1则称为<strong>单一弹性</strong>(unit elastic)，如果小于$1$则认为是<strong>非弹性</strong>(inelastic)的。需求价格弹性由多种因素决定，首先是商品的可替代性，如果某商品有很相近的替代品，那么该商品涨价必定会大幅降低自身的需求量；必需品的需求通常是非弹性的，而奢侈品的需求通常是弹性的；越模糊的商品弹性越低，如“食品”，越精确的商品弹性越大，如“草莓味的冰激凌”；商品在长时间范围内有更大的弹性，短时间范围内的弹性也越小，因为市场需要一个反应时间。</p>
+
+<p><strong>总收入</strong>(total revenue)定义为：</p>
+
+\[R=P\times{Q}\]
+
+<p>其在需求曲线上体现为横纵坐标之积。如果某商品的需求是非弹性的，那么商家提高商品价格可以增加总收入，反之会减少总收入。如下图所示。在左图中需求是非弹性的，需求量的下降率要小于价格的上涨率，所以加价之后的总收入增加了。右图的需求是弹性的，需求量的下降率要大于价格的上涨率，所以加价之后总收入减少。需求价格弹性决定了涨价之后总收入是否会增加。</p>
+
+<p><img src="/img/2019-10-03_15-53-49.bmp" alt="" /></p>
+
+<p><strong>注意</strong>：需求价格弹性跟需求曲线的斜率有关，但是不是完全的线性相关！下图展示的是一个线性需求曲线在不同位置的需求弹性：</p>
+
+<p><img src="/img/2019-10-03_18-33-20.bmp" alt="" /></p>
+
+<p>类似的，供给价格弹性定义为：</p>
+
+\[price \ elasticity \ of \ supply=\frac{\Delta\% \ in \ quantity \ supplied}{\Delta\% \ change \ in \ price}\]
+
+<p>供给价格弹性的一个关键决定因素就是时间，因为企业调整生产业务必定需要时间，如果牵扯到生产线的变动或调整，则需要更长的时间。</p>
+
+<h2 id="surplus">Surplus</h2>
+
+<p>买家为了某件商品愿意花费的最大价钱称为<strong>支付意愿</strong>(willingness to pay)，若买家以少于支付意愿的数额购买到该商品，则会产生<strong>消费者剩余</strong>(consumer surplus)，其值等于买家少花的钱。同理，卖家生产一件商品需要放弃的东西称为<strong>成本</strong>(cost)，若卖家能以高于成本价卖出该商品，也会产生<strong>生产者剩余</strong>(producer surplus)。消费者剩余与生产者剩余的总和为<strong>总剩余</strong>(total surplus)，总剩余可用于衡量社会的<strong>经济福利</strong>(economic well-being)。根据上面的定义，总剩余为：</p>
+
+\[total \ surplus=value \ to \ buyers-cost \ to \ sellers\]
+
+<p><img src="/img/2019-10-05_20-31-29.bmp" alt="" /></p>
+
+<p>自由市场总是会使得总剩余最大。</p>
+
+<h2 id="international-trade">International Trade</h2>
+
+<p>当扩宽视野、考虑国际市场的时候，国内的市场会受到海外的影响。商品在国际市场上流通的价格称为<strong>国际价格</strong>，当国家开放海外市场时，会出现两种情况：国内价格若低于国际价格或者高于国际价格。下图展示的是前者，当国内价格低于国际价格时，国内价格会被抬高，部分商品会以国际价格<strong>出口</strong>至海外，国内消费者缩减的需求会被海外市场弥补。</p>
+
+<p><img src="/img/2019-10-11_20-36-57.bmp" alt="" /></p>
+
+<p>相较于未开放的市场，不难发现开放国际市场下的总剩余要更多！在开放的情况下，消费者剩余为$A$，生产者剩余为$B+C+D$，消费者剩余减少了，但是生产者剩余增多了。</p>
+
+<p>相反的，若国内价格高于国际价格，国内价格同样会被压低到国际价格，部分商品以国际价格进口，生产者缩减的供给量有海外市场弥补。这种情况下，消费者剩余增加，生产者剩余减少。</p>
+
+<p><img src="/img/2019-10-11_20-48-21.bmp" alt="" /></p>
+
+:ET

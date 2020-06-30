@@ -1,0 +1,68 @@
+I"<ul id="markdown-toc">
+  <li><a href="#labor" id="markdown-toc-labor">Labor</a></li>
+  <li><a href="#other-factors-of-production" id="markdown-toc-other-factors-of-production">Other Factors of Production</a></li>
+  <li><a href="#market-wage" id="markdown-toc-market-wage">Market Wage</a></li>
+  <li><a href="#discrimination" id="markdown-toc-discrimination">Discrimination</a></li>
+  <li><a href="#proverty" id="markdown-toc-proverty">Proverty</a>    <ul>
+      <li><a href="#measurement" id="markdown-toc-measurement">Measurement</a></li>
+      <li><a href="#再分配的哲学" id="markdown-toc-再分配的哲学">再分配的哲学</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="labor">Labor</h2>
+
+<p>用于生产商品与服务的输入就是<strong>生产要素</strong>(factors of production)，企业对于生产要素的需求是一种<strong>派生需求</strong>(derived demand)，因为企业想要的是为客户提供商品与服务，而生产商品与服务又需要生产要素。<strong>劳动力</strong>(labor)属于生产要素的一种，因此劳动力市场的需求同样是派生需求，其完全取决于下游商品的需求。</p>
+
+<p>现有一苹果供应商，卖家需要雇佣苹果摘采工摘采苹果，每袋苹果售价$$10$，该供应商的各项指标如下表所示。因为边际产量递减效应，在工人数量$&gt;1$后，每多雇佣一个工人的额外产量是递减的，因此边际收益$MR$也随之递减，而工人的薪资$MC$是固定的，因此边际利润也会递减。</p>
+
+<p><img src="/img/2019-10-19_20-30-36.bmp" alt="" /></p>
+
+<p>由之前的知识易得，企业的最大利润点位于$MC=MR$处，因此，企业总是会以单位劳动边际收入为薪资，去招聘劳动力。即劳动力的边际收入函数曲线即企业对于劳动力的需求曲线。那么可得企业在利润最大化情况下对于劳动力的需求量就位于市场薪资与需求曲线的交点处。</p>
+
+<p><img src="/img/2019-10-19_20-41-30.bmp" alt="" /></p>
+
+<p>因为单位劳动边际收入等于单位劳动边际产量乘上商品售价，所以这两者的改变会引起劳动力需求曲线的移动。假如商品售价因为行情好而变高了，那么单位劳动边际收入也会增加，劳动力需求曲线右移；若因为工业化出现了低成本的机器，变相降低了单位劳动边际产量，那么劳动力需求曲线就会左移。除了这两个原因外，非劳动力生产要素也会影响劳动力需求曲线，如与工人搭配的工具或仪器，如果工具的攻击降低，那么会降低单位劳动边际产量，曲线左移，否则右移。</p>
+
+<h2 id="other-factors-of-production">Other Factors of Production</h2>
+
+<p>除了劳动力之外，还有两种生产要素：<strong>土地</strong>(land)和<strong>资本</strong>(capital)。首先有两种价格，<strong>租赁价格</strong>和<strong>购买价格</strong>，前者是获得生产要素一段时间的使用权，如劳动力；后者是获得生产要素的拥有权。同劳动力一样，企业愿意租赁(购买)额外的生产要素当且仅当生产要素带来的边际收入大于等于其租赁(购买)价格。反过来说，<strong>生产要素的价值等于其带来的边际收入</strong>。</p>
+
+<h2 id="market-wage">Market Wage</h2>
+
+<p>不同的劳动力拥有不同的薪资，而薪资的决定因素有很多种。</p>
+
+<p>不同职业有不同的特点，如有的工作简单有的工作难，如果简单工作与困难工作的薪资一样，那么就没有人愿意去做困难工作。为了解决这一问题，一种手段是<strong>补偿性差额</strong>(compensating differential)，即不同工种之间非货币性差异导致的工资差异。</p>
+
+<p>人力资本是对人本身的投资积累，劳动力的资本决定了劳动力的价值。人力资本中最重要的就是<strong>教育</strong>，教育水平是劳动力生产力的体现，因此价值也更高。人力资本的另一个例子就是明星效应，大量的消费者都愿意去消费跟明星有关的产品，这也是明星的资本。</p>
+
+<p>能力、努力、机遇都是影响薪资的因素。</p>
+
+<p>市场薪资有可能会高于平衡值，一是因为最低工资标准的存在，二是工会罢工的威慑，三是绩效工资的存在。市场工资高于平衡点会造成劳动力的供给增多，需求减少，从而导致失业。</p>
+
+<h2 id="discrimination">Discrimination</h2>
+
+<p>不可否认当前劳动力市场中<strong>歧视</strong>的存在。假设歧视来自于企业，现有同类企业$A$和$B$,企业$A$倾向于雇佣白人，那么$A$企业的偏好会降低对于黑人员工的需求量，导致黑人员工的工资降低。那么$B$企业自然而然会雇佣低成本的黑人员工。在同种商品同等售价的情况下，显然$B$的成本要低于$A$，那么企业$A$就会在竞争中失败而退市。以上分析说明，竞争市场对于雇主歧视是有一定的修正作用的，根本原因就在于企业都是逐利的。</p>
+
+<p>如果歧视来源于消费者或者政府，那么这种歧视是无法消除的。</p>
+
+<h2 id="proverty">Proverty</h2>
+
+<p>经济学里有两个最重要的东西：<strong>效率</strong>和<strong>平等</strong>。政府政策就扮演着维持社会平等的角色，但其同时也会减少刺激，降低资源分配的效率。</p>
+
+<h3 id="measurement">Measurement</h3>
+
+<p>度量社会不平等的方法有很多，有如下两种：</p>
+
+<ul>
+  <li><strong>分配比</strong>(quintile ratio)，上五分位人群与下五分位人群的收入比值；</li>
+  <li><strong>贫困率</strong>(poverty rate)，指位于贫困线以下的人群所占的比率。</li>
+</ul>
+
+<p>但是这两种方法都不是很好的评价指标，因为上述两种指标都是以年收入为度量数值的。首先由于政策原因，政府会对贫困群体发放<strong>实物补贴</strong>(in-kind transfer)，这一部分应当被计算进去；人们会贷款和存款，所以单纯看收入是无法度量生活水平的；还有就是部分人群的收入是浮动的，比如农民完全看天吃饭，收成时好时坏，短期收入是不稳定的，但是长期收入是稳定的，所以以年度收入作为衡量标准并不准确。</p>
+
+<h3 id="再分配的哲学">再分配的哲学</h3>
+
+<p>(待补充))</p>
+
+:ET

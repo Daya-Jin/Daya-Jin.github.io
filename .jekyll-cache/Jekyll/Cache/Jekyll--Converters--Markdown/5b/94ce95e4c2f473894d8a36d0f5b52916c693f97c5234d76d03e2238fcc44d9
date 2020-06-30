@@ -1,0 +1,162 @@
+I"�6<ul id="markdown-toc">
+  <li><a href="#cost" id="markdown-toc-cost">Cost</a></li>
+  <li><a href="#competitive" id="markdown-toc-competitive">Competitive</a></li>
+  <li><a href="#monopoly" id="markdown-toc-monopoly">Monopoly</a></li>
+  <li><a href="#monopolistic-competition" id="markdown-toc-monopolistic-competition">Monopolistic Competition</a></li>
+  <li><a href="#oligopoly" id="markdown-toc-oligopoly">Oligopoly</a></li>
+</ul>
+
+<p>企业销售产品的所有收入称为<strong>总收入</strong>(total revenue)，企业购买输入资料的所有花费称为<strong>总成本</strong>(total cost)，企业的<strong>利润</strong>(profit)就等于$TR-TC$。</p>
+
+<h2 id="cost">Cost</h2>
+
+<p>从经济学的角度来看，企业的总成本还包含机会成本，因此在经济学上，需要现金支出的叫做<strong>显性成本</strong>(explicit costs)，不需要现金支出的叫做<strong>隐性成本</strong>(implicit costs)，因此易得经济学家与会计的计算方式是不同的。现假设银行的储蓄与贷款利率均为$5\%$，某人拥有%30W%的资本用于开店经商。从经济学的角度来看，其机会成本为$30W$本金加上$1W5/年$的储蓄利息损失，而从会计的角度来看，其总成本就为$30W$本金。现假设另一种情况，某人只有$10W$的资本，其向银行贷款$20W$开店经商，那么其经济学成本为$30W$本金加上显性成本$1W/年$再加上储蓄损失$5K/年$，而会计成本则不包含$5K/年$的隐性成本。从不同角度看就产生了两种不同的利润，<strong>经济利润</strong>(economic profit)和<strong>会计利润</strong>(accounting profit)。</p>
+
+<p>输入资料单位与输出资料单位的关系成为<strong>生产函数</strong>(production function)，额外增加一单位输入所产出的输出量称为<strong>边际产量</strong>(marginal product)。随着输入资料数量的增加，每一额外单位输入的输出产出量会减少，这是<strong>边际产量递减</strong>(diminishing marginal product)效应。</p>
+
+<p>在成本中，不随产量变化的成本称为<strong>固定成本</strong>(fixed costs)，如店铺租赁费、设备采购费等；随产量变化的成本为<strong>变动成本</strong>(variable costs)，如原料采购费。总成本除以产量得到<strong>平均成本</strong>(average total cost)，ATC又包括<strong>平均固定成本</strong>(average fixed cost)和<strong>平均变动成本</strong>(average variable cost)。提高一单位产量所增加的成本称为<strong>边际成本</strong>(marginal cost)，这是由于边际产量递减效应引起的。一个典型的成本曲线如下图所示，不难得出如下结论。当$MC&lt;ATC$时，ATC随产量增加而下降，反之ATC随产量增加而增加，且MC与ATC相交于ATC的最小值处，该点对应的产量称为<strong>有效规模</strong>(efficient scale)。</p>
+
+<p><img src="/img/2019-10-15_14-14-48.bmp" alt="" /></p>
+
+<p>长期来看，ATC并不总是固定的，其跟厂家的规模有关，小厂家低产量ATC最低，中型厂家中等产量ATC最低，大厂家高产量ATC最低。因此，从长时间角度来看，商家可以灵活改变工厂规模，那么其在相当一段产量区间内都可以实现ATC最小。换言之，长期成本曲线是所有不同工厂规模下成本曲线的包络线，其与每条短期成本曲线有且只有一个交点。当长期成本随着产量增加而下降时，称为<strong>规模经济</strong>(economies of scale)；当长期成本随产量增加而增加时，称为<strong>规模不经济</strong>(diseconomies of scale)；长期成本不随产量变化时，称为<strong>固定规模报酬</strong>(constant returns to scale)。</p>
+
+<p><img src="/img/2019-10-15_14-45-38.bmp" alt="" /></p>
+
+<h2 id="competitive">Competitive</h2>
+
+<p>假设一个完美竞争市场：</p>
+
+<ul>
+  <li>足够多的的买家与卖家，且双方均是受价者；</li>
+  <li>同一市场的商品大体相同；</li>
+  <li>企业可随意进市和退市。</li>
+</ul>
+
+<p>在竞争市场中，某一商品的价格是固定的，设为$P$。在完美竞争市场中，商品的售价$P$，企业的<strong>平均收入</strong>(average revenue)和企业的<strong>边际收入</strong>(marginal revenue)三者是相等的：$P=AR=MR$。当企业要决定自身的生产规模时，有一个最简单的思路：只要$MR&gt;MC$，加大产量就可以增加利润。而$MR=P$，所以可得企业获得最大利润的产量位于$P=MC$处。</p>
+
+<p><img src="/img/2019-10-15_16-28-13.bmp" alt="" /></p>
+
+<p><strong>停工</strong>(shutdown)指企业短期内不再生产任何商品和服务，<strong>退场</strong>(exit)指企业完全退出该行业，前者是一个短期决策，而后者是一个长期决策。停业的企业会损失所有的销售收入，需要承担固定成本，但节省了变动成本，从这一点出发，易得当企业的收入小于变动成本时就会停业。而退市的企业无需在承担任何成本，包括不变成本与变动成本，类似地，若企业的收入无法覆盖总成本，企业就会退市，相反，若收入大于总成本，企业就会入市。</p>
+
+<p>因为利润最大是$MC=P$，所以企业的MC-Q曲线可以看做该企业的供给曲线。根据以上的分析，一个企业的短期供给曲线是MC位于AVC之上的部分，因为当$MC&lt;AVC$时企业会停工。</p>
+
+<p><img src="/img/2019-10-15_16-33-39.bmp" alt="" /></p>
+
+<p>而该企业的长期供给曲线是MC位于ATC之上的部分，因为当$MC&lt;ATC$时企业会退市：</p>
+
+<p><img src="/img/2019-10-15_16-33-50.bmp" alt="" /></p>
+
+<p>下面分析一下长期竞争市场的情况：</p>
+
+<ul>
+  <li>假设目前市场有利可图，那么会有更多的企业进入市场，增加任意价格下的供给量，平衡点左移，拉低稳定价格；</li>
+  <li>假设目前市场处于亏损，那么企业会退市，降低任意价格下的供给量，平衡点右移，抬高稳定价格；</li>
+</ul>
+
+<p>以上无论哪种情况，最终都会导致该市场的利润为零，这就是<strong>零利润定理</strong>。此时$P=MC=ATC$，企业同时处于最大利润点与有效规模点。因为经济学中的总成本包含机会成本，所以这里的零利润只是经济学上的零利润，但是会计利润是存在的。</p>
+
+<p>注意长期供给曲线有可能是向上的斜线，主要有两个原因。一是输入资料可能是有限的，如土地资源跟水资源，该类资源的成本会随着开发者的增加而增加；二是由于专业化或者其他原因，不同企业拥有不同的成本，低成本企业更容易也更可能进入市场。即使是在零利润情况下，那些低成本企业也能获得正利润，当市价下降时，低成本企业也不会退市，而那些<strong>边际企业</strong>就会决定退市。</p>
+
+<h2 id="monopoly">Monopoly</h2>
+
+<p>相比于竞争市场中的企业，垄断企业是市场的<strong>定价者</strong>(price maker)，因为垄断企业的产品是独一无二的，消费者没有选择，只能接受垄断企业的定价。垄断企业的产生有如下原因：</p>
+
+<ul>
+  <li>独占的资源，但这点不是关键因素；</li>
+  <li>政策性垄断，知识产权保护、国营企业都属于这一类，是垄断出现的主要原因；</li>
+  <li>自然垄断，企业能够以比竞争者更低的成本提供商品，如收费的公路，因为相比于基建投资，后期的维护费用可忽略不计，公路的ATC随着车流量的增加而减少，因此成为自然垄断。但是自然垄断在没有关键资源和政府保护下很难维持垄断地位。</li>
+</ul>
+
+<p>垄断企业与竞争企业最关键的区别就在于对市场价格的影响力。竞争市场中因为有无数生产者在生产同一种产品，所以消费者的需求是完全弹性的。但垄断企业因为是定价者，消费者是受价者，所以垄断企业的产品定价完全取决于消费者的需求曲线。</p>
+
+<p><img src="/img/2019-10-17_14-30-09.bmp" alt="" /></p>
+
+<p>垄断产品的定价越高，能卖出去的数量就越少，所以垄断企业的收入也不是无上限的。每想要多卖出一件产品，售价就需要降低，因此其边际收入是随着销售量增加而递减的，易得利润最大时的销量就位于$MR=MC$的$C$点。而垄断企业的定价取决于需求曲线，因此垄断企业的产品价格位于$B$点。</p>
+
+<p><img src="/img/2019-10-17_14-37-21.bmp" alt="" /></p>
+
+<p>在竞争市场下，$MC$曲线相当于企业的供给曲线，总剩余等于$MC$和Demand曲线围成的大三角形面积；对比垄断市场，易得垄断市场下会造成净损失就等于$BC$右段$MC$和Demand曲线围成的小三角形面积。</p>
+
+<p>追求利润最大化的垄断企业会使用<strong>差别定价</strong>(price discrimination)策略，对有不同购买意愿的消费者制定不同的价格，该策略还能提高社会福利。</p>
+
+<p>政府对于垄断企业的管理有如下方法：</p>
+<ul>
+  <li>使用反垄断法保持市场的竞争力；</li>
+  <li>管控价格，给予补贴；</li>
+  <li>政府收购；</li>
+  <li>放之任之。</li>
+</ul>
+
+<h2 id="monopolistic-competition">Monopolistic Competition</h2>
+
+<p><strong>垄断性竞争</strong>(monopolistic competition)是介于竞争与垄断之间的一种市场形式，其指的是<strong>许多公司</strong>在售卖<strong>相似但又不完全相同</strong>的产品，如出版社，该类市场同时具有垄断性与竞争性：</p>
+<ul>
+  <li>许多卖家(竞争性)，</li>
+  <li>产品差异性(垄断性)，</li>
+  <li>自由入市与退市(竞争性)。</li>
+</ul>
+
+<p>因为该类市场并没有处于完美竞争条件下，所以该类市场具有向下倾斜的需求曲线。从短期来看，考虑垄断性，各曲线如下图所示：向下倾斜的需求曲线，以及低于需求的MR曲线，最大利润的产量位于$MC=MR$处，定价取决于需求曲线。</p>
+
+<p><img src="/img/2019-10-18_11-10-52.bmp" alt="" /></p>
+
+<p>长期来看，考虑竞争性，当某产品的市场有利可图时会吸引更多企业入市，反之会驱逐企业退市，市场最终会达到零利润情况，即$P=ATC$。而该类市场的$P$又取决于需求曲线，因此需求曲线会不断向ATC曲线靠近直至相切。</p>
+
+<p><img src="/img/2019-10-18_11-17-57.bmp" alt="" /></p>
+
+<p>从长期曲线图中可以发现垄断性竞争市场与完美竞争市场的两大差异。一是<strong>产能过剩</strong>(excess capacity)，$MC$与$ATC$相交于$ATC$的最低点，该点对应的产量称为效率规模，而企业的实际生产规模低于该规模，即产能过剩；二是<strong>加价</strong>(markup)，企业产品的$P$要高于$MC$，正因如此，垄断性竞争企业会争取卖出尽量多的产品以获取额外利润。</p>
+
+<p>因为垄断性竞争企业卖出额外的产品会带来额外利润，所以企业有推销产品的动力，手段之一就是<strong>广告</strong>。广告的坏处在于其会操纵消费者的喜好，更像是一种洗脑而不是宣传；好处就是广告能使消费者更好地对比同类商品，增加市场的效率，同时广告有利于竞争，降低了新企业入市的门槛。企业愿意在广告上花的价钱实际上就代表着向消费者传达关于自家产品质量的信号，<strong>广告所包含的信息并不在于广告的内容，而在于广告的代价</strong>。这一性质会让消费者更倾向于选择名牌，同时也让企业保持产品的质量。</p>
+
+<h2 id="oligopoly">Oligopoly</h2>
+
+<p>当某产品的市场中只有少数几个卖家时，就形成了<strong>寡头垄断</strong>(oligopoly)。因为寡头垄断市场中的竞争者非常少，所以对该类市场的分析涉及到<strong>博弈论</strong>(game theory)。</p>
+
+<p><img src="/img/2019-10-18_10-56-13.bmp" alt="" /></p>
+
+<p>先假设一种最简单的情况——<strong>双头垄断</strong>(duopoly)，某村的自来水市场中只有两位卖家$A$和$B$，同时假设自来水为零成本，整个村子的需求表如下：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Q</th>
+      <th style="text-align: center">P</th>
+      <th style="text-align: center">TR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">50</td>
+      <td style="text-align: center">70</td>
+      <td style="text-align: center">3500</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">60</td>
+      <td style="text-align: center">60</td>
+      <td style="text-align: center">3600</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">70</td>
+      <td style="text-align: center">50</td>
+      <td style="text-align: center">3500</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">80</td>
+      <td style="text-align: center">40</td>
+      <td style="text-align: center">3200</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>易得最佳策略为$A$、$B$合作形成<strong>企业联合</strong>(cartel)，约定总共提供$60$的产量，每家获得的利润是$1800$。基于此，$A$、$B$同时会有如下思考：</p>
+
+<blockquote>
+  <p>假设对方生产$30$，己方加大产量到$40$，市价变成$50$，自家可获得的利润为$2000$，此时可保证自己的利润最大，产量再大或再小都不行。</p>
+</blockquote>
+
+<p>于是最终的局面会演变成$A$、$B$均生产$40$单位的水，市价$40$，各自获得利润为$1600$。在博弈情况中，双方均考虑自身利益作出决策最终形成的稳定局面称为<strong>纳什均衡</strong>(Nash equilibrium)。实际中经常会发生因考虑自身利益而导致合作失败的情况，这种现象也称<strong>囚徒困境</strong>(prisoners’ dilemma)。</p>
+
+<p><img src="/img/2019-10-18_15-40-45.bmp" alt="" /></p>
+
+<p>(待补充)</p>
+:ET

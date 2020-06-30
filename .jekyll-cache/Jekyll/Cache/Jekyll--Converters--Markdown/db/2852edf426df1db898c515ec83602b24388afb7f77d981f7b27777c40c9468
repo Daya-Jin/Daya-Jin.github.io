@@ -1,0 +1,256 @@
+I"A0<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a>    <ul>
+      <li><a href="#skip-gram" id="markdown-toc-skip-gram">Skip-Gram</a></li>
+      <li><a href="#word2vec" id="markdown-toc-word2vec">word2vec</a>        <ul>
+          <li><a href="#hierarchical-softmax" id="markdown-toc-hierarchical-softmax">Hierarchical Softmax</a></li>
+          <li><a href="#negative-sampling" id="markdown-toc-negative-sampling">Negative Sampling</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>对于文本单词的表示，最经典的方法是使用<strong>词袋</strong>(bag of word)模型，即对于每一个单词，都为其分配一个唯一的标识ID。如一个句子<code class="language-plaintext highlighter-rouge">I am a king</code>，将所有单词排序后分配一个唯一标识，那么对应关系有：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Word</th>
+      <th style="text-align: center">ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">a</td>
+      <td style="text-align: center">0</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">am</td>
+      <td style="text-align: center">1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">I</td>
+      <td style="text-align: center">2</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">king</td>
+      <td style="text-align: center">3</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>如果要使用机器学习或深度学习的技术去分析文本数据时，那么自然而然会将这些单词转换成one-hot向量输送到模型中去。如果以单词为单位，上述句子所构成的训练集可以表示成：</p>
+
+\[\left[
+ \begin{matrix}
+   0 &amp; 0 &amp; 1 &amp; 0 \\
+   0 &amp; 1 &amp; 0 &amp; 0 \\
+   1 &amp; 0 &amp; 0 &amp; 0 \\
+   0 &amp; 0 &amp; 0 &amp; 1 \\
+  \end{matrix}
+\right]\]
+
+<p>文本数据中出现的独特单词构成的集合叫做<strong>词汇</strong>(vocabulary)或<strong>词典</strong>(dictionary)，如上述句子的词汇大小就为$4$。当使用one-hot方式来表示单词时，易得每个单词的向量长度为词汇大小<code class="language-plaintext highlighter-rouge">voc_size</code>。这种方法的缺点显而易见，在语料库过大时，词汇大小是无法预料的，这就会导致词向量的长度过大并且是极度稀疏的。</p>
+
+<p>引入隐语义或隐特征的概念，假设现在有六个单词：man, woman, king, queen, apple, orange。那么可以根据这些的单词所具有的一些属性写出一些特征：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Word</th>
+      <th style="text-align: center">Gender</th>
+      <th style="text-align: center">Royal</th>
+      <th style="text-align: center">Age</th>
+      <th style="text-align: center">Food</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">man</td>
+      <td style="text-align: center">-1</td>
+      <td style="text-align: center">0.01</td>
+      <td style="text-align: center">0.03</td>
+      <td style="text-align: center">0.09</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">woman</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">0.02</td>
+      <td style="text-align: center">0.02</td>
+      <td style="text-align: center">0.01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">king</td>
+      <td style="text-align: center">-0.95</td>
+      <td style="text-align: center">0.93</td>
+      <td style="text-align: center">0.7</td>
+      <td style="text-align: center">0.02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">queen</td>
+      <td style="text-align: center">0.97</td>
+      <td style="text-align: center">0.95</td>
+      <td style="text-align: center">0.69</td>
+      <td style="text-align: center">0.01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">apple</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">-0.01</td>
+      <td style="text-align: center">0.03</td>
+      <td style="text-align: center">0.95</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">orange</td>
+      <td style="text-align: center">0.01</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">-0.02</td>
+      <td style="text-align: center">0.97</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>藉由隐特征的表示方式，词向量之间很好地保留了其语义信息，并且这种表示方式没有稀疏的缺点。WordEmbedding的核心思想就是如何使用机器学习或深度学习技术去学习得到单词的这种表示。</p>
+
+<p>在实际实现(TensorFlow)中，词的嵌入表示是使用一个矩阵来存储的。假设词汇大小为$\vert{V}\vert$，嵌入维度为$\vert{E}\vert$，那么嵌入表示的矩阵形状就为$(\vert{V}\vert, \vert{E}\vert)$，矩阵的形状同神经网络中的一样。那么查找过程是这样的，假设上述例子中的<code class="language-plaintext highlighter-rouge">king</code>的onehot表示为：</p>
+
+\[x_{king}=
+\left[
+ \begin{matrix}
+   0 &amp; 0 &amp; 1 &amp; 0 &amp; 0 &amp; 0 \\
+  \end{matrix}
+\right]\]
+
+<p>嵌入矩阵为：</p>
+
+\[emb\_lookup=
+\left[
+ \begin{matrix}
+   X &amp; X &amp; X &amp; X \\
+   X &amp; X &amp; X &amp; X \\
+   -0.95 &amp; 0.93 &amp; 0.7 &amp; 0.02 \\
+   X &amp; X &amp; X &amp; X \\
+   X &amp; X &amp; X &amp; X \\
+   X &amp; X &amp; X &amp; X \\
+  \end{matrix}
+\right]\]
+
+<p><code class="language-plaintext highlighter-rouge">king</code>的嵌入表示可以通过矩阵相乘得到：</p>
+
+\[e_{king}=x_{king}\times{emb\_lookup}=
+\left[
+ \begin{matrix}
+   -0.95 &amp; 0.93 &amp; 0.7 &amp; 0.02 \\
+  \end{matrix}
+\right]\]
+
+<p>不难发现，当使用一个词的onehot向量与嵌入矩阵相乘时，其实就相当于取出嵌入矩阵的某一行。因为onehot向量的特殊性，其与任何矩阵相乘起到的是一个查询某行的作用，因此在实现中嵌入矩阵通常叫做<code class="language-plaintext highlighter-rouge">emb_lookup</code>。</p>
+
+<h2 id="skip-gram">Skip-Gram</h2>
+
+<p>Skip-Gram是<strong>词嵌入</strong>(word embedding)的经典模型，其思想是在向量空间中，以中心词为输入，最大化上下文单词的相似性。</p>
+
+<p>在原始文本空间中，以指定长度的词序列为窗口，相应的概率如下图所示：</p>
+
+<p><img src="/img/2019-04-17_15-33-51.bmp" alt="" /></p>
+
+<p>对整段文字而言，其在参数$\theta$下的似然函数为：</p>
+
+\[L(\theta)=\prod\limits_{t=1}^{T}\prod\limits_{-m{\le}j{\le}m\atop{j{\ne}0}}P(w_{t+j}\vert{w_{t}};\theta)\]
+
+<p>对数似然函数为：</p>
+
+\[\ln{L(\theta)}=\sum\limits_{t=1}^{T}\sum\limits_{-m{\le}j{\le}m\atop{j{\ne}0}}P(w_{t+j}\vert{w_{t}};\theta)\]
+
+<p>那么需要最小化的目标函数为：</p>
+
+\[J(\theta)=-\frac{1}{T}\sum\limits_{t=1}^{T}\sum\limits_{-m{\le}j{\le}m\atop{j{\ne}0}}P(w_{t+j}\vert{w_{t}};\theta)\]
+
+<p>其中$T$为文本总长度，$m$为窗口尺寸，$w_{t}$为中心词，$w_{t+j}$为上下文。</p>
+
+<p>一个最简单的wordEmbedding示例见<a href="https://github.com/Daya-Jin/DL_for_learner/blob/master/NLP/WordEmbedding.ipynb">这里</a>。</p>
+
+<p>朴素Skip-Gram的问题在哪里？问题在于$P(w_{t+j}\vert{w_{t}};\theta)$的计算。根据一个词去预测另一个的概率，实际上就是一个多分类问题，多分类问题的输出一般是使用$softmax$函数来计算的，其输出是一个长度等于类别数的概率向量。对于单词预测，类别数就是词汇表的大小，假设词汇大小为$V$，单词$w_{i}$的嵌入表示为$z_{i}$，那么给定一个中心词$w_{1}$，预测某一个上下文单词$w_{2}$的出现概率为：</p>
+
+\[P(w_{2}\vert{w_{1}};\theta)=\frac{e^{\theta_{2}^{T}z_{2}}}{\sum_{i=1}^{V}e^{\theta_{i}^{T}z_{i}}}\]
+
+<p>注意这只是$softmax$层输出向量中的一个标量而已，完整的$softmax$层输出为：</p>
+
+\[\left[
+ \begin{matrix}
+   P(w_{1}\vert{w_{1}};\theta) &amp; P(w_{2}\vert{w_{1}};\theta) &amp; \cdots &amp; P(w_{V}\vert{w_{1}};\theta) \\
+  \end{matrix}
+\right]\]
+
+<p>不难发现$softmax$层的计算量非常巨大，因为词汇大小$V$是巨大的。</p>
+
+<h2 id="word2vec">word2vec</h2>
+
+<p>为了优化Skip-Gram在计算softmax时的计算负担，word2vec提出了两种优化方法：Hierarchical Softmax与Negative Sampling。</p>
+
+<h3 id="hierarchical-softmax">Hierarchical Softmax</h3>
+
+<p>一次性平行地计算所有单词的概率值然后取最大概率太低效，那么可以使用分层的思想来计算概率。如果使用一颗平衡二叉树，每个叶节点代表一个单词，那么找到目标单词只需要计算从root到leaf的一条路径，计算复杂度就可以从$V$降低到$\log_{2}V$。把所有单词映射到二叉树的叶节点上，目标是找到最有可能出现的目标单词。</p>
+
+<p>Hierarchical Softmax把神经网络的full softmax层转成了一个树形结构，该树的每个叶子节点代表一个词，该树的结构采用根据词频生成的霍夫曼树。</p>
+
+<p><img src="/img/14713582964341.jpg" alt="" /></p>
+
+<p>每个非叶节点即是一个神经元，其权重参数为$\theta_{i}$。假设$w_{i}$是一个中心词，$w_{2}$是其一个上下文单词，那么根节点的输入为$w_{i}$的嵌入向量$z_{i}$，那么计算$P(w_{2}\vert{w_{i}})$需要经过一条路径：</p>
+
+\[\begin{aligned}
+  P(w_{2}\vert{w_{i}})&amp;=\sigma(z_{i}\theta_{1})\cdot\sigma(z_{i}\theta_{2})\cdot(1-\sigma(z_{i}\theta_{3})) \\
+\end{aligned}\]
+
+<p>在Hierarchical Softmax训练过程中，期望最大化$P(w_{2}\vert{w_{i}})$就只需要计算一条路径即可，计算复杂度的期望值为$\log_{2}V$，同样通过梯度下降法来优化。</p>
+
+<h3 id="negative-sampling">Negative Sampling</h3>
+
+<p>Skip-Gram模型的思路是使用一个中心词去预测上下文词，word2vec将其转成了预测两个单词是否具有上下文关系，即把无监督多分类问题转成了有监督二分类问题。解决extreme multiclass问题所用到的技术叫<strong>负采样</strong>(negative sampling)。</p>
+
+<p>假设文本数据中有这么一段：</p>
+
+<blockquote>
+  <p>… a glass of orange juice …</p>
+</blockquote>
+
+<p>假设以<code class="language-plaintext highlighter-rouge">orange</code>为中心词，窗口为$1$，那么能得到一个正样本</p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">[(orange, juice), 1]</code></p>
+</blockquote>
+
+<p>这里暂时不考虑<code class="language-plaintext highlighter-rouge">[orange, of]</code>。假设负采样率$k=3$，那么在词汇中取出$3$个与<code class="language-plaintext highlighter-rouge">orange</code>无上下文关系的单词组成三个负样本：</p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">[(orange, king), 0]</code></p>
+
+  <p><code class="language-plaintext highlighter-rouge">[(orange, book), 0]</code></p>
+
+  <p><code class="language-plaintext highlighter-rouge">[(orange, boy), 0]</code></p>
+</blockquote>
+
+<p>那么现在现在只需要计算$k+1$个概率：</p>
+
+\[\left[
+ \begin{matrix}
+   P(juice\vert{orange};\theta) &amp; P(king\vert{orange};\theta) &amp; P(book\vert{orange};\theta) &amp; P(boy\vert{orange};\theta) \\
+  \end{matrix}
+\right]\]
+
+<p>在该轮只需要把这四个输出当做是四个二分类器来更新参数即可。损失函数可以写成：</p>
+
+\[J(\theta)=-\frac{1}{N}\sum\limits_{n=1}^{N}[\log{P_{\theta}(D=1\vert{pair_{pos}})}+\log{P_{\theta}(D=0\vert{pair_{neg}})}]\]
+
+<p>其中$D$代表词组对的关系，如果两单词具有上下文关系则$D=1$，反之$D=0$；$pair_{pos}$代表正样本单词对，$pair_{neg}$代表负样本单词对；$N$表示样本数。</p>
+
+<p>那么如何选取单词去构成负样本？原论文中给出的建议是，在生成负样本时，单词$w_{i}$被选中的概率为：</p>
+
+\[P(w_{i})=\frac{f(w_{i})^{3/4}}{\sum\limits_{j=1}^{\vert{V}\vert}f(w_{j})^{3/4}}\]
+
+<p>其中$f(w_{i})$表示单词$w_{i}$在整个文本数据中出现的频数；$\vert{V}\vert$表示词汇大小。</p>
+
+<p>一个正儿八经的word2vec示例<a href="https://github.com/Daya-Jin/DL_for_learner/blob/master/NLP/word2vec.ipynb">见此</a>。</p>
+:ET

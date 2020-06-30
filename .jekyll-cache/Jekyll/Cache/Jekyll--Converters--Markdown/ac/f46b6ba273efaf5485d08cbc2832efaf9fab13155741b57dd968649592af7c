@@ -1,0 +1,175 @@
+I"<ul id="markdown-toc">
+  <li><a href="#basic" id="markdown-toc-basic">Basic</a></li>
+  <li><a href="#signal-and-slot" id="markdown-toc-signal-and-slot">Signal and Slot</a></li>
+  <li><a href="#qwindow" id="markdown-toc-qwindow">QWindow</a></li>
+</ul>
+
+<h2 id="basic">Basic</h2>
+
+<p>新建一个QT窗口项目，其文件结构如下图所示：</p>
+
+<p><img src="/img/2019-11-21_10-28-49.jpg" alt="" /></p>
+
+<p>其中<code class="language-plaintext highlighter-rouge">main.cpp</code>负责主程序的逻辑：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include "widget.h"
+</span>
+<span class="cp">#include &lt;QApplication&gt;
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="n">QApplication</span> <span class="n">a</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>    <span class="c1">//app对象，有且仅有一个</span>
+    <span class="n">Widget</span> <span class="n">w</span><span class="p">;</span>
+    <span class="n">w</span><span class="p">.</span><span class="n">show</span><span class="p">();</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">.</span><span class="n">exec</span><span class="p">();</span>    <span class="c1">// 阻塞</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<pre><code class="language-widget.cpp```负责界面的逻辑：">
+```c++
+#include "widget.h"
+#include &lt;QPushButton&gt;
+
+Widget::Widget(QWidget *parent):QWidget(parent)
+{
+    setWindowTitle("title");
+    setFixedSize(800,600);
+
+    QPushButton * btn2=new QPushButton("text",this);
+
+    QPushButton * btn1=new QPushButton;
+    btn1-&gt;setParent(this);
+    btn1-&gt;setText("close");
+    btn1-&gt;move(50,50);    // 移动按键，窗口左上角为(0,0)
+
+    // connect(sender,signal,receiver,method)
+    connect(btn1,&amp;QPushButton::clicked,this,&amp;QWidget::close);
+}
+
+Widget::~Widget()
+{
+}
+</code></pre>
+
+<h2 id="signal-and-slot">Signal and Slot</h2>
+
+<p>信号与槽函数是QT的核心，信号可以看做是事件，槽函数可以看做是对事件发生后的处理逻辑。</p>
+
+<p>首先看下sender的代码及其信号，注意信号无返回值，也不需要实现的，只需要定义即可。</p>
+
+<pre><code class="language-sender.h```：">
+```c++
+#ifndef SENDER_H
+#define SENDER_H
+
+#include &lt;QObject&gt;
+
+class Sender : public QObject
+{
+    Q_OBJECT
+public:
+    explicit Sender(QObject *parent = nullptr);
+
+signals:
+    void Signal();    // 信号无返回值，不需要实现
+    void Signal(const char* s);    // 重载信号
+
+public slots:
+};
+
+#endif // SENDER_H
+</code></pre>
+
+<p>接收方的槽函数用于处理信号发生时的逻辑，对于有参信号，槽函数必须与其保持一致。此处的槽函数逻辑就设为简单的打印。</p>
+
+<pre><code class="language-receiver.h```：">
+```c++
+#ifndef RECIVIER_H
+#define RECIVIER_H
+
+#include &lt;QObject&gt;
+
+class Receiver : public QObject
+{
+    Q_OBJECT
+public:
+    explicit Receiver(QObject *parent = nullptr);
+
+signals:
+
+public slots:
+    void Slot();    // 槽函数无返回，需要处理逻辑
+    void Slot(const char* s);    // 重载槽函数
+};
+
+#endif // RECIVIER_H
+</code></pre>
+
+<pre><code class="language-receiver.cpp```：">
+```c++
+#include "receiver.h"
+#include &lt;QDebug&gt;
+
+Receiver::Receiver(QObject *parent) : QObject(parent)
+{
+}
+
+/*无参槽函数*/
+void Receiver::Slot()
+{
+    qDebug("non-param signal!");
+}
+
+/*重载槽函数*/
+void Receiver::Slot(const char* s)
+{
+    qDebug("signal: %s",s);
+}
+</code></pre>
+
+<p>最后是界面逻辑，主要分为两步：1. 连接信号与槽函数，两者可以是多对多的关系；2. 触发信号，有多种方式。</p>
+
+<pre><code class="language-widget.cpp```：">
+```c++
+#include "widget.h"
+#include &lt;QPushButton&gt;
+
+
+Widget::Widget(QWidget *parent)
+    : QWidget(parent)
+{
+    Sender * s=new Sender(this);
+    Receiver * r=new Receiver(this);
+
+    /*无参信号与无参槽函数*/
+    void(Sender::*sS)(void)=&amp;Sender::Signal;
+    void(Receiver::*rS)(void)=&amp;Receiver::Slot;
+
+    /*有参信号与有参槽函数*/
+    void(Sender::*sS_with_P)(const char *)=&amp;Sender::Signal;
+    void(Receiver::*rS_with_P)(const char *)=&amp;Receiver::Slot;
+
+    /*1. 连接信号与槽*/
+    connect(s,sS,r,rS);
+    connect(s,sS_with_P,r,rS_with_P);
+
+    /*2. 自触发信号*/
+    emit s-&gt;Signal();
+    emit s-&gt;Signal("hello");
+
+    /*2. 按键触发无参信号*/
+    QPushButton *btn=new QPushButton("trigger",this);
+    connect(btn,&amp;QPushButton::clicked,s,sS);
+
+    /*2. 按键触发有参信号，使用匿名函数*/
+    connect(btn,&amp;QPushButton::clicked,this,[=](){s-&gt;Signal("hello");});
+}
+
+Widget::~Widget()
+{
+}
+</code></pre>
+
+<h2 id="qwindow">QWindow</h2>
+
+:ET

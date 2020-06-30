@@ -1,0 +1,135 @@
+I"<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a>    <ul>
+      <li><a href="#central-tendency" id="markdown-toc-central-tendency">Central Tendency</a></li>
+      <li><a href="#dispersion" id="markdown-toc-dispersion">Dispersion</a></li>
+      <li><a href="#distribution" id="markdown-toc-distribution">Distribution</a></li>
+      <li><a href="#law" id="markdown-toc-law">Law</a></li>
+      <li><a href="#test" id="markdown-toc-test">Test</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>统计学的本质就是通过<strong>观测数据</strong>(data)去推断<strong>整体数据</strong>(population)的性质。</p>
+
+<h2 id="central-tendency">Central Tendency</h2>
+
+<p><strong>Mean</strong>，群体均值：</p>
+
+\[\mu=\frac{1}{N}\sum\limits_{i}^{N}x_{i}\]
+
+<p>样本均值：</p>
+
+\[\bar{x}=\frac{1}{n}\sum\limits_{i}^{n}x_{i}\]
+
+<p>后者是前者的一个估计。当数据中有离群值时，平均值会被影响。</p>
+
+<p><strong>Median</strong>，中位数，将观测样本排序后位于中间位置的值或值的均值。中位数不受离群值的影响。</p>
+
+<p><strong>Mode</strong>，众数，观测样本中出现次数最多的值。众数不受离群值的影响。</p>
+
+<p><strong>Expected Value</strong>，期望值，假设随机变量$X$的概率密度函数为$f(x)$，期望值为：</p>
+
+\[E(X)=\int_{-\infty}^{+\infty}x_{i}f(x_{i})\, dx\]
+
+<p>若$X$是离散的，则期望值为：</p>
+
+\[E(X)=\sum\limits_{i}^{N}x_{i}P(x_{i})\]
+
+<p>期望值一般记为：$\mathbb{E}_{x\sim{f(x)}}$。</p>
+
+<p><strong>Z-score</strong>，Z分数，表征样本与均值偏离了几个标准差：</p>
+
+\[z=\frac{x-\mu}{\sigma}\]
+
+<h2 id="dispersion">Dispersion</h2>
+
+<p><strong>Variance</strong>，群体方差：</p>
+
+\[\sigma^{2}=\frac{\sum_{i}^{N}(x_{i}-\mu)^{2}}{N}\]
+
+<p>样本方差：</p>
+
+\[S^{2}=\frac{\sum_{i}^{n}(x_{i}-\bar{x})^{2}}{n-1}\]
+
+<p>后者是前者的一个估计。</p>
+
+<p><strong>Standard deviation</strong>，群体标准差：$\sigma$，样本标准差：$s$。</p>
+
+<h2 id="distribution">Distribution</h2>
+
+<p><strong>Gaussian Distribution</strong>，高斯分布：</p>
+
+\[\mathcal{N}(\mu,\sigma)=\frac{1}{\sqrt{2\pi}\sigma}exp\Big(-\frac{(x-\mu)^{2}}{2\sigma^{2}}\Big)\]
+
+<p>对高斯分布而言，有一个$3\sigma$原则，即偏离均值超过$3$个$\sigma$的数据($z&gt;3$)会被视为离群值。</p>
+
+<p><strong>Bernoulli Distribution</strong>，伯努利分布，也称二项分布：</p>
+
+\[\begin{cases}
+    P(X=1)=p \\
+    P(X=0)=1-p \\
+\end{cases}\]
+
+<p>最经典的二项分布事件是抛硬币。更常用的是$n$重伯努利分布，表示做$n$次独立伯努利事件，某一事件发生$k$次的概率为：</p>
+
+\[P(X=k)=C_{n}^{k}p^{k}(1-p)^{n-k}\]
+
+<h2 id="law">Law</h2>
+
+<p><strong>Law of Large Numbers</strong>，大数定律</p>
+
+<p><strong>Central limit theorem</strong>，中心极限定理，对一个群体不断抽样，对样本计算$\bar{x}$，重复多次后$\bar{x}$的频数服从$\mathcal{N}(\mu,\frac{\sigma}{\sqrt{n}})$，其中$\mu$为群体均值，$\sigma$为群体方差，$n$为样本容量。</p>
+
+<h2 id="test">Test</h2>
+
+<p><strong>Hypothesis Test</strong>，假设检验，首先对群体性质做一个期望不成立的空假设$H_{0}$，然后计算样本的统计量来决定是否拒绝空假设，假设检验即是反证法。</p>
+
+<p>定义一个<strong>P值</strong>(P-value)，其等于在$H_{0}$成立时观测样本满足某一性质的概率：</p>
+
+\[p=P(stas|H_{0})\]
+
+<p>定义<strong>显著性水平</strong>(Significance Level)，$\alpha$表示能接受的P值下限是多少。当$p&lt;\alpha$时就拒绝空假设$H_{0}$。</p>
+
+<p><strong>Z-test</strong></p>
+
+\[Z=\frac{\bar{X}-\mu}{\sigma/\sqrt{n}}\]
+
+<p><strong>t-test</strong></p>
+
+\[t=\frac{\bar{X}-\mu}{s/\sqrt{n}}\]
+
+<p><strong>$\mathcal{X}^{2}$-test</strong></p>
+
+\[\mathcal{X}^{2}=\frac{(n-1)s^{2}}{\sigma^{2}}\]
+
+<p><strong>Error</strong></p>
+
+<p>做检验肯定可能出现错误，根据判断的结果有两种错误：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center">$H_{0}$ True</th>
+      <th style="text-align: center">$H_{0}$ False</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">reject $H_{0}$</td>
+      <td style="text-align: center">Type I error</td>
+      <td style="text-align: center">Good</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">fail to reject $H_{0}$</td>
+      <td style="text-align: center">Good</td>
+      <td style="text-align: center">Type II error</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>当原假设$H_{0}$成立时，但是却拒绝了$H_{0}$，则发生了<strong>第一类错误</strong>；若原假设$H_{0}$实际不成立，但是却接受了$H_{0}$，则发生了<strong>第二类错误</strong>。</p>
+
+:ET

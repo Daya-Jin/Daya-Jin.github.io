@@ -1,0 +1,150 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#10-principles-of-economics" id="markdown-toc-10-principles-of-economics">10 Principles of Economics</a>    <ul>
+      <li><a href="#how-people-make-decisions" id="markdown-toc-how-people-make-decisions">How people make decisions</a></li>
+      <li><a href="#how-people-interact" id="markdown-toc-how-people-interact">How people interact</a></li>
+      <li><a href="#how-the-econommics-as-a-whole-works" id="markdown-toc-how-the-econommics-as-a-whole-works">How the econommics as a whole works</a></li>
+    </ul>
+  </li>
+  <li><a href="#the-gains-from-trade" id="markdown-toc-the-gains-from-trade">The Gains from Trade</a></li>
+</ul>
+
+<p>经济学研究的是<strong>社会如何分配有限的资源</strong>。</p>
+
+<h2 id="10-principles-of-economics">10 Principles of Economics</h2>
+
+<h3 id="how-people-make-decisions">How people make decisions</h3>
+
+<ol>
+  <li>
+    <p>People face trade-offs. 做任何决定都需要权衡，有得必有失。社会中典型的一个权衡就是<strong>公平</strong>(Equality)与<strong>效率</strong>(Efficiency)之间的权衡</p>
+  </li>
+  <li>
+    <p>The cost of something is what you give up to get it. 机会成本(Opportunity Cost)指的是为了做某件事而放弃的那些东西。</p>
+  </li>
+  <li>
+    <p>Rational people think at the margin. 理性人群会考虑<strong>边际变动</strong>(Marginal Change)，即对已有计划的微调。做边际变动时需要考虑<strong>边际效益</strong>(Marginal Benefit)与<strong>边际成本</strong>(Marginal Cost)。</p>
+  </li>
+  <li>
+    <p>People respond to incentives. 人们会对激励做出反应，无论是奖励(正激励)还是惩罚(负激励)。</p>
+  </li>
+</ol>
+
+<h3 id="how-people-interact">How people interact</h3>
+
+<ol>
+  <li>
+    <p>Trade can make everyone better off. 交易带来双赢，并导致社会分工与专业化。</p>
+  </li>
+  <li>
+    <p>Markets are usually a good way to organize economic activity. 自由的<strong>市场经济</strong>(Market Economy)就能做得很好，被称为<strong>无形的手</strong>(invisible hand)。</p>
+  </li>
+  <li>
+    <p>Governments can sometimes improve market outcomes. 政府干预有时也能改善市场。</p>
+  </li>
+</ol>
+
+<h3 id="how-the-econommics-as-a-whole-works">How the econommics as a whole works</h3>
+
+<ol>
+  <li>
+    <p>A country’s standard of living depends on its ability to produce goods and services. 生产力决定国家的生活水平。</p>
+  </li>
+  <li>
+    <p>Prices rise when the government prints too much money. 货币超发导致物价上涨。</p>
+  </li>
+  <li>
+    <p>Society faces a short-run trade-off between inflation and unemployment. 社会处于通货膨胀与失业之间的短期交替中。通货膨胀会刺激消费并促进就业，而政府控制通货膨胀又会起反作用。</p>
+  </li>
+</ol>
+
+<h2 id="the-gains-from-trade">The Gains from Trade</h2>
+
+<p>现有一个情景如下：两个人Frank和Ruby，他们能够生产两种资源，肉和土豆。两人每生产一单位资源所需要的时间(min)及一天工作八小时的产量如下表所示：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center">Meat</th>
+      <th style="text-align: center">Potatos</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Frank</td>
+      <td style="text-align: center">60</td>
+      <td style="text-align: center">15</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Ruby</td>
+      <td style="text-align: center">20</td>
+      <td style="text-align: center">10</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>看上去Ruby在两种资源上都有效率优势，那是不是两人在做交易的时候总是不划算的呢？答案是否定的。考虑如下方案：Frank生产32单位的Potato，Ruby生产12单位的Potato和18单位的Meat，然后Frank用15单位的Potato换取5单位的Meat。两人资源的状态转换如下表所示：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center">P</th>
+      <th style="text-align: center">M</th>
+      <th style="text-align: center">-&gt;</th>
+      <th style="text-align: center">P</th>
+      <th style="text-align: center">M</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Frank</td>
+      <td style="text-align: center">32</td>
+      <td style="text-align: center">0</td>
+      <td style="text-align: center">-&gt;</td>
+      <td style="text-align: center">17</td>
+      <td style="text-align: center">5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Ruby</td>
+      <td style="text-align: center">12</td>
+      <td style="text-align: center">18</td>
+      <td style="text-align: center">-&gt;</td>
+      <td style="text-align: center">27</td>
+      <td style="text-align: center">13</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>而根据计算，Frank生产<strong>17P5M</strong>所需的时间为9h15m，而Ruby生产<strong>27P13M</strong>所需时间为8h50m，均超过了8h，即交易使得两人都获得了超过自身一天生产量的资源。这是为什么？</p>
+
+<p><strong>绝对优势</strong>(Absolute Advantage)：如果某人生产某商品需要更少的生产要素，那么这个人在生产该商品时就有绝对优势。<strong>相对优势</strong>(Comparative Advantage)：如果某人生产某商品有更低的机会成本，那么这个人在生产该商品时就有相对优势。</p>
+
+<p>毫无疑问，Ruby在两种资源上都有绝对优势，然后看一下两人生产资源的机会成本：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center">Meat</th>
+      <th style="text-align: center">Potatos</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">Frank</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">0.25</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">Ruby</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">0.5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>原因就在于Frank生产Potato的机会成本更低而Ruby生产Meat的机会成本更低。即是说，相对优势是促使社会分工的驱动力，同时该例子也印证了经济学的第五原则。</p>
+
+<p>注意交易的价格必须处于双方生产资源的机会成本之间，上述例子中交易的价格为1M=3P和1P=0.33M，该价格恰好处于两者的机会成本之间。</p>
+:ET

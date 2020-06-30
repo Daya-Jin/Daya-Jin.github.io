@@ -1,0 +1,67 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#distance" id="markdown-toc-distance">Distance</a>    <ul>
+      <li><a href="#manhattan-distance" id="markdown-toc-manhattan-distance">Manhattan Distance</a></li>
+      <li><a href="#euclidean-distance" id="markdown-toc-euclidean-distance">Euclidean Distance</a></li>
+      <li><a href="#minkowski-distance" id="markdown-toc-minkowski-distance">Minkowski Distance</a></li>
+      <li><a href="#hamming-distance" id="markdown-toc-hamming-distance">Hamming distance</a></li>
+    </ul>
+  </li>
+  <li><a href="#similarity" id="markdown-toc-similarity">Similarity</a>    <ul>
+      <li><a href="#inner-product" id="markdown-toc-inner-product">inner product</a></li>
+      <li><a href="#cosine" id="markdown-toc-cosine">Cosine</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="distance">Distance</h1>
+
+<h2 id="manhattan-distance">Manhattan Distance</h2>
+
+<p><strong>曼哈顿距离</strong>又称曼哈顿街区距离，在现实中的意义可以通过一个例子来说明。假如我们在城市中要由一个位置达到另一个位置，需要走多远的距离。虽然两点之间的距离是直线距离最短，但是因为城市规划是有路线限制的，我们只能沿着街道走。一般认为街道呈十字型设计，那么$A(a_{1},a_{2})$、$B(b_{1},b_{2})$两点之间的街区距离为:</p>
+
+\[dist(A,B)=|a_{1}-b_{1}|+|a_{2}-b_{2}|\]
+
+<p>下面给出两$n$维向量$\vec{a}$与$\vec{b}$的曼哈顿距离计算公式：</p>
+
+\[dist(\vec{a},\vec{b})=\sum\limits_{i=1}^{n}|a_{i}-b_{i}|\]
+
+<h2 id="euclidean-distance">Euclidean Distance</h2>
+
+<p>欧几里得距离是现实生活中最常用的一种距离计算方法，在数学上也被称为几何距离。欧氏距离计算的是两点之间在空间上的一个真实距离或最短距离。</p>
+
+\[dist(\vec{a},\vec{b})=\sqrt{\sum\limits_{i=1}^{n}(a_{i}-b_{i})^{2}}\]
+
+<h2 id="minkowski-distance">Minkowski Distance</h2>
+
+<p>不难发现，曼哈顿距离与欧氏距离分别相当于两向量相减然后再取一个$L1$范数与$L2$范数。那么将其扩展，就得到了<strong>闵可夫斯基距离</strong>(Minkowski Distance)。</p>
+
+\[dist(\vec{a},\vec{b})=\sqrt[p]{\sum\limits_{i=1}^{n}(a_{i}-b_{i})^{p}}\]
+
+<h2 id="hamming-distance">Hamming distance</h2>
+
+<p><strong>海明距离</strong>是在信息领域中用于对比信息差异的一种度量方法，它计算的是两个位串数据相异的位数：</p>
+
+\[dist(s_{1},s_{2})=\sum\limits_{i=1}^{n}I(s_{1}[i]{\ne}s_{2}[i])\]
+
+<p>其中$I(x)$为指示函数，当$x$成立时取值为$1$，否则为$0$。</p>
+
+<h1 id="similarity">Similarity</h1>
+
+<h2 id="inner-product">inner product</h2>
+
+<p>度量两向量之间的相似性，首先想到的应该是向量之间的内积：</p>
+
+\[\vec{a}\cdot\vec{b}=\vec{a}\vec{b}^{T}=\sum\limits_{i=1}^{n}a_{i}b_{i}\]
+
+<p>在欧几里得空间中，内积还可以表示成几何表达式：</p>
+
+\[\vec{a}\cdot\vec{b}=|\vec{a}||\vec{b}|\cos{\theta}\]
+
+<p>其中$\theta$为两向量的余弦夹角。</p>
+
+<h2 id="cosine">Cosine</h2>
+
+<p>由上述启发不难想到，<strong>夹角余弦</strong>(cosine)可以用来度量两向量在方向上的相似度，两向量同向为$1$，反向则为$-1$。</p>
+
+\[\cos&lt;\vec{a},\vec{b}&gt;=\frac{\vec{a}\cdot\vec{b}}{|\vec{a}||\vec{b}|}\]
+:ET

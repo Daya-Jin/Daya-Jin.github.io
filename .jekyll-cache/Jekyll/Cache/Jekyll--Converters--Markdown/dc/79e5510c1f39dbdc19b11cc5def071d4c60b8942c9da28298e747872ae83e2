@@ -1,0 +1,74 @@
+I"�
+<p><code class="language-plaintext highlighter-rouge">ls [OPT] [FILE]</code>：列出文件列表</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-a</code>，列出有文件</li>
+  <li><code class="language-plaintext highlighter-rouge">-l</code>，使用清单格式</li>
+  <li><code class="language-plaintext highlighter-rouge">-h</code>，搭配<code class="language-plaintext highlighter-rouge">-l</code>使用，可读形式</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">cd [PATH]</code>：change directory，切换目录</p>
+
+<p><code class="language-plaintext highlighter-rouge">mkdir [OPT] DIRs</code>：make directory，创建目录</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-p</code>，如需必要，创建父目录</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">rm [OPT] FILE</code>：remove，删除文件或目录</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-f</code>，强制删除，无视错误</li>
+  <li><code class="language-plaintext highlighter-rouge">-r</code>，递归删除目录及其子目录</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">which CMD</code>：定位命令的路径</p>
+
+<p><code class="language-plaintext highlighter-rouge">touch [OPT] [FILEs]</code>：更改文件时间戳，文件不存在时创建空文件，常用于创建文件</p>
+
+<p><code class="language-plaintext highlighter-rouge">cp [OPT] SOURCE DEST</code>，copy，复制操作</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-f</code>，强制复制</li>
+  <li><code class="language-plaintext highlighter-rouge">-r</code>，递归复制目录及其子目录</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">mv [OPT] SOURCE DEST</code>，move，移动操作</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-f</code>，覆盖</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">less FILE</code>：查看文件内容，空格换页，上下换行</p>
+
+<p><code class="language-plaintext highlighter-rouge">head [OPT] FILE</code>：查看文件的前$10$行</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-n</code>，指定查看前$n$行</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">tail [OPT] FILE</code>：查看文件的前$10$行</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-f</code>，当文件增长时，输出追加内容</li>
+  <li><code class="language-plaintext highlighter-rouge">-n</code>，指定查看前$n$行</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">wc [OPT] FILE</code>：查看文件内容的统计信息</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-c</code>，文件字节数</li>
+  <li><code class="language-plaintext highlighter-rouge">-l</code>，文件行数</li>
+  <li><code class="language-plaintext highlighter-rouge">-w</code>，文件单词数</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">du [OPT] [FILE]</code>：disk usage，查看磁盘占用</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-d</code>，限定显示目录的深度</li>
+  <li><code class="language-plaintext highlighter-rouge">-h</code>，可读形式</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">df [OPT]</code>：查看文件系统的使用情况</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-h</code>，可读形式</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">ln [OPT] TARGET LINK</code>：</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-s</code>，软连接，快捷方式</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">unlink FILE</code>：解除连接</p>
+:ET

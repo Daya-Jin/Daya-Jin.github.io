@@ -1,0 +1,193 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#模型概述" id="markdown-toc-模型概述">模型概述</a>    <ul>
+      <li><a href="#决策边界" id="markdown-toc-决策边界">决策边界</a></li>
+    </ul>
+  </li>
+  <li><a href="#后记" id="markdown-toc-后记">后记</a></li>
+</ul>
+
+<h1 id="模型概述">模型概述</h1>
+
+<p>假定有一组数据$X$与$Y$，其中</p>
+
+\[X=
+\left[
+\begin{matrix}
+ x^{(1)} \\
+x^{(2)} \\
+ \vdots \\
+ x^{(m)} \\
+\end{matrix}
+\right]\]
+
+<p>$X$总共包含$m$条数据，而每条数据$x^{(i)}$又可表示为：</p>
+
+\[x^{(i)}=
+\left[
+\begin{matrix}
+ x^{i}_{0} &amp; x^{i}_{1} &amp; \cdots &amp; x^{i}_{n}
+\end{matrix}
+\right]\]
+
+<p>$Y$是一组向量，具体展开为：</p>
+
+\[Y=
+\left[
+\begin{matrix}
+ y^{(1)} \\
+y^{(2)} \\
+ \vdots \\
+y^{(m)} \\
+\end{matrix}
+\right]\]
+
+<p>假设二分类数据服从伯努利分布，特征条件概率服从高斯分布：</p>
+
+\[P(y=1)=\phi \\
+P(y=0)=1-\phi \\
+P(x|y=1)=\frac{1}{\sqrt{2\pi}\sigma}exp[-\frac{(x-\mu_{1})^{2}}{2\sigma^{2}}] \\
+P(x|y=0)=\frac{1}{\sqrt{2\pi}\sigma}exp[-\frac{(x-\mu_{0})^{2}}{2\sigma^{2}}] \\\]
+
+<p>给定一个样本，模型的输出为：</p>
+
+\[\begin{aligned}
+P(y=1|x)&amp;=\frac{P(y=1)P(x|y=1)}{P(y=0)P(x|y=0)+P(y=1)P(x|y=1)} \\
+&amp;=\frac{1}{1+\frac{P(y=0)P(x|y=0)}{P(y=1)P(x|y=1)}} \\
+&amp;=\frac{1}{1+\frac{1-\phi}{\phi}exp[-\frac{(x-\mu_{0})^{2}}{2\sigma^{2}}+\frac{(x-\mu_{1})^{2}}{2\sigma^{2}}]} \\
+&amp;=\frac{1}{1+\frac{1-\phi}{\phi}exp\frac{2(\mu_{0}-\mu_{1})x+\mu_{1}^{2}-\mu_{0}^{2}}{2\sigma^{2}}} \\
+&amp;=\frac{1}{1+exp(\frac{\mu_{0}-\mu_{1}}{\sigma^{2}}x+\frac{\mu_{1}^{2}-\mu_{0}^{2}}{2\sigma^{2}}+\ln(\frac{1-\phi}{\phi}))}
+\end{aligned}\]
+
+<p>令$-a=\frac{\mu_{0}-\mu_{1}}{\sigma^{2}}$，$-b=\frac{\mu_{1}^{2}-\mu_{0}^{2}}{2\sigma^{2}}+\ln(\frac{1-\phi}{\phi})$，得：</p>
+
+\[P(y=1|x)=\frac{1}{1+e^{-(ax+b)}}\]
+
+<p>引入<strong>几率</strong>(odds)概念：</p>
+
+\[\begin{aligned}
+odds&amp;=\frac{P(y=1|x)}{P(y=0|x)} \\
+&amp;=\frac{P(y=1|x)}{1-P(y=1|x)} \\
+&amp;=e^{ax+b}
+\end{aligned}\]
+
+<p>两边同时取对数：</p>
+
+\[\begin{aligned}
+\ln(\frac{P(y=1|x)}{P(y=0|x)})&amp;=ax+b
+\end{aligned}\]
+
+<p>由此引出Logistic Regression的概念，以线性回归去拟合一个<strong>对数几率</strong>(log-odds)，其模型表达式为：</p>
+
+\[\begin{aligned}
+\hat{y}^{(i)}
+ &amp;= \sigma(\theta_{0}x^{(i)}_{0}+\theta_{1}x^{(i)}_{1}+...+\theta_{n}x^{(i)}_{n}) \\
+ &amp;= \sigma(x^{(i)}\theta^{T}) \\
+\end{aligned}\]
+
+<p>其中，$\sigma(x)$为：</p>
+
+\[\sigma(x)=\frac{1}{1+e^{-x}}\]
+
+<p>其图像为：</p>
+
+<p><img src="img/Logistic-curve.svg" alt="" /></p>
+
+<p>Logistic Regression实质上是将线性回归扩展到了分类任务上，并支持概率输出，其表达式为：</p>
+
+\[\hat{y}=\frac{1}{1+e^{-(x\theta^{T})}}\]
+
+<p>为了简便，上式省略了样本标号$i$，下同。然后经过一系列变换：</p>
+
+\[\begin{aligned}
+&amp; \hat{y}= \frac{1}{1+e^{-(x\theta^{T})}}= \frac{e^{x\theta^{T}}}{1+e^{x\theta^{T}}}\\
+&amp; \frac{1}{\hat{y}} = 1+\frac{1}{e^{x\theta^{T}}} \\
+&amp; \frac{1-\hat{y}}{\hat{y}} = \frac{1}{e^{x\theta^{T}}}
+\end{aligned}\]
+
+<p>得：</p>
+
+\[ln\frac{\hat{y}}{1-\hat{y}}=x^{(i)}\theta^{T}\]
+
+<p><strong>注意</strong>，由于$\sigma(x)$函数的作用，Logistic Regression的输出其实是一个概率，输入数据为正样本的概率，即：</p>
+
+\[\begin{aligned}
+\hat{y}&amp;=P(y=1|x;\theta) \\
+1-\hat{y}&amp;=P(y=0|x;\theta) \\
+\end{aligned}\]
+
+<p>那么，参数$\theta$关于$X$的似然函数为：</p>
+
+\[\begin{aligned}
+L(\theta|X) &amp;= \prod_{i}P(y=0|x;\theta)\prod_{i}P(y=1|x;\theta) \\
+			&amp;= \prod_{i}\hat{y}^{y}(1-\hat{y})^{1-y}
+\end{aligned}\]
+
+<p>其对数似然函数为：</p>
+
+\[\begin{aligned}
+lnL(\theta|X) &amp;= \sum_{i}[yln(\hat{y})+(1-y)ln(1-\hat{y})] \\
+&amp;= \sum_{i}[yln\frac{\hat{y}}{1-\hat{y}}+ln(1-\hat{y})] \\
+&amp;= \sum_{i}[y*x\theta^{T}-ln(1+e^{x\theta^{T}})]
+\end{aligned}\]
+
+<p>我们需要最大化似然函数，那么等价的最小化损失函数为：</p>
+
+\[Loss(\theta)=\sum_{i}[-y*x\theta^{T}+ln(1+e^{x\theta^{T}})]\]
+
+<p>对于logistic regression，同样可以使用梯度下降法来优化参数$\theta$。注意sigmoid函数的导数：</p>
+
+\[\begin{aligned}
+\frac{\partial{\sigma(x)}}{\partial{x}}&amp;=\frac{-1}{(1+e^{-x})^{2}}\cdot(-e^{-x}) \\
+&amp;=\frac{1}{1+e^{-x}}\cdot\frac{e^{-x}+1-1}{1+e^{-x}} \\
+&amp;=\frac{1}{1+e^{-x}}\cdot(1-\frac{1}{1+e^{-x}}) \\
+&amp;=\sigma(x)\cdot(1-\sigma(x)) \\
+\end{aligned}\]
+
+<p>那么在标量形式下，易推得损失函数关于参数$\theta​$的梯度为：</p>
+
+\[\begin{aligned}
+\frac{\partial{L}}{\partial{\theta}}&amp;=-\frac{y}{\hat{y}}{\cdot}\frac{\partial{\hat{y}}}{\partial{\theta}}+\frac{1-y}{1-\hat{y}}\cdot{\frac{\partial{\hat{y}}}{\partial\theta}} \\
+&amp;=-\frac{y}{\hat{y}}{\cdot}\hat{y}(1-\hat{y}){\cdot{x}}+\frac{1-y}{1-\hat{y}}{\cdot}\hat{y}(1-\hat{y}){\cdot}x \\
+&amp;=(\hat{y}-y)x
+\end{aligned}\]
+
+<p>注意到logistic regression的梯度形式与linear regression是一样的，唯一的区别就在于$\hat{y}$的不同。</p>
+
+<h2 id="决策边界">决策边界</h2>
+
+<p>由于Logistic Regression的输出是一个$p(\hat{y}=1)$的概率，那么对于二分类任务，模型对某一样本做出判别的依据就是一个概率阈值。假如概率阈值为0.5，则当模型输出$f(x)&gt;0.5$时判为正样本，而当模型输出$f(x)&lt;0.5$时判为负样本，此时模型的决策边界是啥呢？</p>
+
+<p>回顾一下$\sigma(x)$的图像，$\sigma(x)$恰好经过$(0, 0.5)$这个点，并且是单增函数，那么可以看出，模型的决策边界为：</p>
+
+\[x^{(i)}\theta^{T}=\sigma(0.5)\]
+
+<p>当然，决策边界会根据自定义阈值而改变；除此之外，logistic regression也可以设置为输出连续的概率值。</p>
+
+<p><a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/linear_model/LogisticRegression.ipynb">实现指导</a></p>
+
+<p><a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/linear_model/LogisticRegression.py">完整代码</a></p>
+
+<h1 id="后记">后记</h1>
+
+<p>logistic regression本质上还是属于linear model的一种，那么linear model所具有的优点，logistic regression也是有的；对于缺点也同样成立。</p>
+
+<p>由于logistic regression背后的概率思想，如果训练样本存在样本平衡性问题，那么就会对该模型的表现有很大的影响。直观一点来说，logistic regression的决策边界会受到样本分布密度的推挤，其决策边界会比较偏近于少数类。</p>
+
+<p>logistic regression还有一个被讨论的点就是关于高维稀疏特征的。</p>
+
+<ol>
+  <li>首先，logistic regression作为一个线性模型，将特征之间做组合形成新特征是增强线性模型对非线性数据拟合能力的必要手段之一；</li>
+  <li>另外，线性模型计算简单，在高维特征下的速度也是可以接受的；</li>
+  <li>线性模型的正则化是对各个特征的权重做惩罚，不会在某一特征上产生过拟合；</li>
+  <li>最后，对特征的离散化，会增强模型对于更细粒度特征的学习能力。</li>
+</ol>
+
+<p>注意到由对数似然得到的logistic regression损失函数可以写成：</p>
+
+\[\begin{aligned}
+    Loss&amp;=-\sum_{i}[y\ln(\hat{y})+(1-y)\ln(1-\hat{y})] \\
+    &amp;=\sum_{i}[y\ln\frac{1}{\hat{y}}+(1-y)\ln\frac{1}{1-\hat{y}}] \\
+\end{aligned}\]
+
+<p>在信息论中，$H(P,Q)=\sum\limits_{i}P(i)\log\frac{1}{Q(i)}$称为交叉熵，其中$P$为真实分布，$Q$为非真实分布，交叉熵可用于衡量两个分布之间的差异性。不难发现，logistic regression的损失函数实际上就是一个交叉熵。</p>
+:ET

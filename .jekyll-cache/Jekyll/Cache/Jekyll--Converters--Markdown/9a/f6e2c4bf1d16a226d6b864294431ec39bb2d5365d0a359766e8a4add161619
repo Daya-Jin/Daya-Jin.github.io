@@ -1,0 +1,252 @@
+I"u<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a>    <ul>
+      <li><a href="#预处理" id="markdown-toc-预处理">预处理</a>        <ul>
+          <li><a href="#分词" id="markdown-toc-分词">分词</a></li>
+          <li><a href="#词典" id="markdown-toc-词典">词典</a></li>
+        </ul>
+      </li>
+      <li><a href="#编码" id="markdown-toc-编码">编码</a>        <ul>
+          <li><a href="#text-encoder" id="markdown-toc-text-encoder">Text Encoder</a></li>
+          <li><a href="#label-encoder" id="markdown-toc-label-encoder">Label Encoder</a></li>
+        </ul>
+      </li>
+      <li><a href="#数据类" id="markdown-toc-数据类">数据类</a></li>
+      <li><a href="#模型设计" id="markdown-toc-模型设计">模型设计</a></li>
+      <li><a href="#模型搭建" id="markdown-toc-模型搭建">模型搭建</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>原始文本文件在项目目录下的<code class="language-plaintext highlighter-rouge">./dataset/news_CN/</code>下，每一行的格式为<code class="language-plaintext highlighter-rouge">{label}\t{text}</code>，如：</p>
+
+<p><code class="language-plaintext highlighter-rouge">时政\t台风莫拉克重创台湾南部 15人死亡65人失踪</code></p>
+
+<h2 id="预处理">预处理</h2>
+
+<h3 id="分词">分词</h3>
+
+<p>对于文本任务，最基本的预处理就是分词，这里使用<code class="language-plaintext highlighter-rouge">jieba</code>开源分词库来完成。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gen_seg_file</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">file_out</span><span class="p">):</span>
+    <span class="s">'''
+    生成分词后的文件
+    :param file_in: 原始未分词的文件
+    :param file_out: 输出文件，词语使用' '分隔
+    :return:
+    '''</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="s">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">fd</span><span class="p">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_out</span><span class="p">,</span> <span class="s">'w'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">.</span><span class="n">strip</span><span class="p">().</span><span class="n">split</span><span class="p">(</span><span class="s">'</span><span class="se">\t</span><span class="s">'</span><span class="p">)</span>
+            <span class="n">words</span> <span class="o">=</span> <span class="n">jieba</span><span class="p">.</span><span class="n">cut</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">words_trans</span> <span class="o">=</span> <span class="s">''</span>
+
+            <span class="c1"># 去除切分出来的空白词
+</span>            <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+                <span class="n">word</span> <span class="o">=</span> <span class="n">word</span><span class="p">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">word</span> <span class="o">!=</span> <span class="s">''</span><span class="p">:</span>
+                    <span class="n">words_trans</span> <span class="o">+=</span> <span class="n">word</span> <span class="o">+</span> <span class="s">' '</span>
+
+            <span class="n">out_line</span> <span class="o">=</span> <span class="s">'{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">words_trans</span><span class="p">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">fd</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_line</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="词典">词典</h3>
+
+<p>分词之后，需要对数据做格式化处理。那么最简单的格式化就是对每一个单词做整形编码，每一个单词对应着唯一的一个数字。对于label而言同样需要做格式化。</p>
+
+<p>为了实现整形编码，需要构建一个词典，即单词与数字的映射表，还有类别与数字的映射表。同时注意到，一个包含所有可能单词的词典是巨大的，实际中不可能接受这样大的存储开销，所以实际的词典只会记录一部分词语，这里选择按频数来选择记录哪些词语。除此之外，词典中还必须能够对未知词语编码，这里对未知词语统一编码成$0$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gen_vocab</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">file_out</span><span class="p">):</span>
+    <span class="s">'''
+    生成词典文件，每行格式为'idx word word_cnt'
+    :param file_in:
+    :param file_out:
+    '''</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="s">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">fd</span><span class="p">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="n">word_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">line</span><span class="p">.</span><span class="n">strip</span><span class="p">().</span><span class="n">split</span><span class="p">(</span><span class="s">'</span><span class="se">\t</span><span class="s">'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">data</span><span class="p">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="n">word_dict</span><span class="p">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">word_dict</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">word_dict</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">word_dict</span><span class="p">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>  <span class="c1"># 以频数排序
+</span>                       <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_out</span><span class="p">,</span> <span class="s">'w'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">fd</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">'0</span><span class="se">\t</span><span class="s">&lt;UNK&gt;</span><span class="se">\t</span><span class="s">99999</span><span class="se">\n</span><span class="s">'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">word_dict</span><span class="p">):</span>
+            <span class="n">fd</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">'{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>类别词典的构建就比较简单了，直接做一一映射即可：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">gen_cat</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">file_out</span><span class="p">):</span>
+    <span class="s">'''
+    生成类别编码文件
+    :param file_in:
+    :param file_out:
+    :return:
+    '''</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="s">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">fd</span><span class="p">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="n">label_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="n">label</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="p">.</span><span class="n">strip</span><span class="p">().</span><span class="n">split</span><span class="p">(</span><span class="s">'</span><span class="se">\t</span><span class="s">'</span><span class="p">)</span>
+        <span class="n">label_dict</span><span class="p">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">label_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">label_dict</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">label_dict</span><span class="p">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_out</span><span class="p">,</span> <span class="s">'w'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">label_dict</span><span class="p">):</span>
+            <span class="n">fd</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">'{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>至此，对于原始文件的预处理就结束了。</p>
+
+<h2 id="编码">编码</h2>
+
+<p>对正文跟label，分别封装两个编(解)码器。</p>
+
+<h3 id="text-encoder">Text Encoder</h3>
+
+<p>对于文本编码器，需要实现编码与解码，同时还要满足单词与句子级别的功能。编码与解码分别通过两个字典实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">_word2id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="bp">self</span><span class="p">.</span><span class="n">_id2word</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>然后对外暴露的核心API有四个：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">word2id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">word</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="s">'''
+    单次级别的编码
+    :param word:
+    :return:
+    '''</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_word2id</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">_unk</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">id2word</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="s">'''
+    单次级别的解码
+    :param idx:
+    :return:
+    '''</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_id2word</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s">'&lt;UNK&gt;'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">s2id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="s">'''
+    句子级别编码
+    :param s:
+    :return:
+    '''</span>
+    <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">word2id</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">s</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">' '</span><span class="p">)]</span>
+
+<span class="k">def</span> <span class="nf">id2s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idxs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="s">'''
+    句子级别解码
+    :param idxs:
+    :return:
+    '''</span>
+    <span class="k">return</span> <span class="s">' '</span><span class="p">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="p">.</span><span class="n">id2word</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">idxs</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h3 id="label-encoder">Label Encoder</h3>
+
+<p>类似地，类别编码器的实现也是依靠字典：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">_cat2id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>暴露的核心API为编码器：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">cat2id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cat</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">cat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">_cat2id</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nb">Exception</span><span class="p">(</span><span class="s">'{} is not in cat'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">cat</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">_cat2id</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h2 id="数据类">数据类</h2>
+
+<p>与之前实现的一些CNN实例一样，为了便于数据的管理，创建一个<code class="language-plaintext highlighter-rouge">Data</code>类，数据会被读取到该类中，同时这个类也负责产生batch，其核心API为<code class="language-plaintext highlighter-rouge">next_batch()</code>。</p>
+
+<p>注意在处理时序数据时，feed到网络中的每一条数据维度(时间维度与特征维度)应该相同。所以对于超出长度的数据，要做截断；而对于长度不足的数据，要做填充。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">label</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">line</span><span class="p">.</span><span class="n">strip</span><span class="p">().</span><span class="n">split</span><span class="p">(</span><span class="s">'</span><span class="se">\t</span><span class="s">'</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_vocal</span><span class="p">.</span><span class="n">s2id</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_cat_dict</span><span class="p">.</span><span class="n">cat2id</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="bp">self</span><span class="p">.</span><span class="n">_t_size</span><span class="p">]</span>
+<span class="n">n_pad</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_t_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># 需要填充的位数
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">_vocal</span><span class="p">.</span><span class="n">unk</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_pad</span><span class="p">)]</span>
+</code></pre></div></div>
+
+<p>上述代码中，当<code class="language-plaintext highlighter-rouge">n_pad&lt;=0</code>时，最后一行的列表生成式不会生效。</p>
+
+<h2 id="模型设计">模型设计</h2>
+
+<p>文本分类问题，实际属于RNN中的many to one问题。即RNN部分的输入$rnn_inputs$具有多个时间状态，RNN部分的输出$rnn_outputs$只取最后一个时间状态的输出。</p>
+
+<p>同时对于文本的处理，embedding是不可绕开的操作。那么设计一个简单的LSTM网络，首先是对输入$X$做embedding，得到$X_emb$，然后将$X_emb$输送到LSTM网络中，后接FC层，然后得出分类结果。模型结构如下图所示：</p>
+
+<p><img src="/img/TextClf.svg" alt="" /></p>
+
+<p>确定网络结构之后，只需要注意每一层数据流的维度即可。</p>
+
+<h2 id="模型搭建">模型搭建</h2>
+
+<p>首先是<code class="language-plaintext highlighter-rouge">placeholder</code>，作为文本输入的$X$拥有时间维度，而预测的目标变量是一个标量。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">int32</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">params</span><span class="p">.</span><span class="n">t_size</span><span class="p">])</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">int64</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>而嵌入层的输入维度是onehot向量的维度，输出维度是嵌入维度。对文本数据而言，onehot向量的维度等于词典的大小。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">emb_lookup</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">vocal_size</span><span class="p">,</span> <span class="n">params</span><span class="p">.</span><span class="n">emb_size</span><span class="p">],</span>
+                                <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">emb_lookup</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>    <span class="c1"># (batch_size,t_size,emb_size)
+</span></code></pre></div></div>
+
+<p>然后是LSTM层：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">lstm_layers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">lstm_layers</span><span class="p">):</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">rnn_cell</span><span class="p">.</span><span class="n">LSTMCell</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">lstm_size</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">lstm_layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+
+<span class="n">lstm_layers</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">rnn_cell</span><span class="p">.</span><span class="n">MultiRNNCell</span><span class="p">(</span><span class="n">lstm_layers</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>RNN的多对一问题，只取出RNN网络最后一层的最后一个时间状态下的输出：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">lstm_outputs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">dynamic_rnn</span><span class="p">(</span><span class="n">lstm_layers</span><span class="p">,</span>
+                                    <span class="n">inputs</span><span class="o">=</span><span class="n">emb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">lstm_outputs</span> <span class="o">=</span> <span class="n">lstm_outputs</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+</code></pre></div></div>
+
+<p>后接FC层：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">lstm_outputs</span><span class="p">,</span> <span class="n">params</span><span class="p">.</span><span class="n">fc_size</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>最终输出：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">logits</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">fc</span><span class="p">,</span> <span class="n">unit_O</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>    <span class="c1"># 输出层，无激活
+</span></code></pre></div></div>
+
+<p>多分类任务，使用softmax损失函数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">losses</span><span class="p">.</span><span class="n">sparse_softmax_cross_entropy</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>以上即是核心代码，完整代码<a href="https://github.com/Daya-Jin/DL_for_learner/tree/master/NLP/text_clf">见此</a>。</p>
+:ET

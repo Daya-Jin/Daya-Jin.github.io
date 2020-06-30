@@ -1,0 +1,336 @@
+I"�m<ul id="markdown-toc">
+  <li><a href="#多态" id="markdown-toc-多态">多态</a>    <ul>
+      <li><a href="#需求" id="markdown-toc-需求">需求</a></li>
+      <li><a href="#问题" id="markdown-toc-问题">问题</a></li>
+      <li><a href="#解决" id="markdown-toc-解决">解决</a></li>
+      <li><a href="#原理" id="markdown-toc-原理">原理</a></li>
+      <li><a href="#接口" id="markdown-toc-接口">接口</a></li>
+    </ul>
+  </li>
+  <li><a href="#前置声明" id="markdown-toc-前置声明">前置声明</a></li>
+</ul>
+
+<h2 id="多态">多态</h2>
+
+<h3 id="需求">需求</h3>
+
+<p>从示例来讲C++中的多态。现在有如下需求：某游戏包含若干英雄，每个英雄有攻击动作和受伤反应。一个最蠢的实现就是定义一个英雄基类，然后再派生出若干子类，<strong>在子类中</strong>实现每个英雄的行为，需要注意的是，攻击动作会有一个目标英雄，并且攻击动作会引发目标英雄的受伤反应。那么一个最简易的实现代码如下所示。<code class="language-plaintext highlighter-rouge">Hero.h</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;string&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Hero</span> <span class="p">{};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span><span class="p">;</span>    <span class="c1">// 为避免互相引用所必要的前置声明</span>
+
+<span class="k">class</span> <span class="nc">Garen</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Garen"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Yi</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="kt">void</span> <span class="n">Hurted</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Yi"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Garen</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="kt">void</span> <span class="n">Hurted</span><span class="p">();</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">Hero.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Hero.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="n">Garen</span><span class="o">::</span><span class="n">Attack</span><span class="p">(</span><span class="n">Yi</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" attacks!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">p</span><span class="o">-&gt;</span><span class="n">Hurted</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Garen</span><span class="o">::</span><span class="n">Hurted</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" was attacked!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Yi</span><span class="o">::</span><span class="n">Attack</span><span class="p">(</span><span class="n">Garen</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" attacks!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">p</span><span class="o">-&gt;</span><span class="n">Hurted</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Yi</span><span class="o">::</span><span class="n">Hurted</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" was attacked!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">main.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Hero.h"
+</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Garen</span> <span class="n">garen</span><span class="p">;</span>
+	<span class="n">Yi</span> <span class="n">yi</span><span class="p">;</span>
+	<span class="n">garen</span><span class="p">.</span><span class="n">Attack</span><span class="p">(</span><span class="o">&amp;</span><span class="n">yi</span><span class="p">);</span>
+	<span class="n">yi</span><span class="p">.</span><span class="n">Attack</span><span class="p">(</span><span class="o">&amp;</span><span class="n">garen</span><span class="p">);</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>上述代码构成的程序是正常运行的：</p>
+
+<blockquote>
+  <p>Garen attacks!
+Yi was attacked!
+Yi attacks!
+Garen was attacked!</p>
+</blockquote>
+
+<p>但是容易发现如果要新增一个英雄的话，比如现要新增一个名为”EZ”的新英雄，上述代码的改动是可预见的：所有旧英雄中都需要新增一个成员函数<code class="language-plaintext highlighter-rouge">void Attack(EZ* p)</code>，并且新英雄<code class="language-plaintext highlighter-rouge">EZ</code>类中需要完成对所有旧英雄的攻击代码。这样的改动量是无法接受的，注意到<code class="language-plaintext highlighter-rouge">Hero</code>基类所派生的所有子类都有<code class="language-plaintext highlighter-rouge">Attack</code>和<code class="language-plaintext highlighter-rouge">Hurted</code>行为，只是应用对象的类不同，自然而然想到如下思路：在基类中实现，由子类继承，并在调用时重载。</p>
+
+<h3 id="问题">问题</h3>
+
+<p>C++自带基类与派生类的互相转化机制，因此更改后的代码如下所示。<code class="language-plaintext highlighter-rouge">Hero.h</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;string&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Hero"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="kt">void</span> <span class="n">Hurted</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span><span class="p">;</span>    <span class="c1">// 为避免互相引用所必要的前置声明</span>
+
+<span class="k">class</span> <span class="nc">Garen</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Garen"</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Yi"</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">Hero.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Hero.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="n">Hero</span><span class="o">::</span><span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" attacks!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">p</span><span class="o">-&gt;</span><span class="n">Hurted</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Hero</span><span class="o">::</span><span class="n">Hurted</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" was attacked!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>修改后的程序输出为：</p>
+
+<blockquote>
+  <p>Hero attacks!
+Hero was attacked!
+Hero attacks!
+Hero was attacked!</p>
+</blockquote>
+
+<p>继承重载未生效。</p>
+
+<h3 id="解决">解决</h3>
+
+<p>相比于普通的函数重载如<code class="language-plaintext highlighter-rouge">int add(int a,int b)</code>与<code class="language-plaintext highlighter-rouge">double add(double a,double b)</code>，上述代码中在父类实现的成员函数并没有指定具体的类型，而是仅以父类类型来进行限定。虽然C++可以自动完成子类到父类的自动转换，但代码的运行结果表明转换之后调用的函数访问的是父类对象的属性。</p>
+
+<p>想要以父类形式调用子类中的重载函数，需要用到C++中的一个特性——<strong>虚函数</strong>。在父类中对被子类重载的函数前使用<code class="language-plaintext highlighter-rouge">virtual</code>关键字修饰即可。修改后的代码如下所示，<code class="language-plaintext highlighter-rouge">Hero.h</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;string&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Hero"</span><span class="p">;</span>
+	
+<span class="nl">public:</span>
+	<span class="k">virtual</span> <span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="k">virtual</span> <span class="kt">void</span> <span class="n">Hurted</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span><span class="p">;</span>    <span class="c1">// 为避免互相引用所必要的前置声明</span>
+
+<span class="k">class</span> <span class="nc">Garen</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Garen"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="kt">void</span> <span class="n">Hurted</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="k">const</span> <span class="n">string</span> <span class="n">name</span> <span class="o">=</span> <span class="s">"Yi"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="kt">void</span> <span class="n">Hurted</span><span class="p">();</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">Hero.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Hero.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="n">Hero</span><span class="o">::</span><span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{}</span>
+
+<span class="kt">void</span> <span class="n">Hero</span><span class="o">::</span><span class="n">Hurted</span><span class="p">()</span> <span class="p">{}</span>
+
+<span class="kt">void</span> <span class="n">Garen</span><span class="o">::</span><span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" attacks!"</span><span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">p</span><span class="o">-&gt;</span><span class="n">Hurted</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Garen</span><span class="o">::</span><span class="n">Hurted</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" was attacked!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Yi</span><span class="o">::</span><span class="n">Attack</span><span class="p">(</span><span class="n">Hero</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" attacks!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">p</span><span class="o">-&gt;</span><span class="n">Hurted</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Yi</span><span class="o">::</span><span class="n">Hurted</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">" was attacked!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="原理">原理</h3>
+
+<p>涉及到底层的地址与指针，待补充</p>
+
+<h3 id="接口">接口</h3>
+
+<p>多态最主要的作用就是用于实现接口，接口是一个独立的函数，其可接受不同类型的对象，然后可以针对对象的类型来完成一个功能。听起来接口好像就等同于函数的重载，但实际上这里的重载不是发生在接口函数上，而是发生在基类的虚函数上。</p>
+
+<p>现有如下需求，实现一台饮品制造机，要求其能制造咖啡和茶两种饮品，这两种饮品的制作过程都分为三步，前者为加咖啡、加水、加牛奶，后者为加茶业、加水、加枸杞。具体的代码实现如下，<code class="language-plaintext highlighter-rouge">Drinking.h</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AbcDrinking</span> <span class="p">{</span>
+<span class="nl">public:</span>
+	<span class="cm">/*仅声明无实现的抽象函数，同时也是虚函数*/</span>
+	<span class="k">virtual</span> <span class="kt">void</span> <span class="n">addWater</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>    <span class="c1">// 加水</span>
+	<span class="k">virtual</span> <span class="kt">void</span> <span class="n">addMat</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>    <span class="c1">// 主料</span>
+	<span class="k">virtual</span> <span class="kt">void</span> <span class="n">addOther</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>    <span class="c1">// 配料</span>
+	<span class="kt">void</span> <span class="n">Make</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Cof</span> <span class="o">:</span><span class="k">public</span> <span class="n">AbcDrinking</span> <span class="p">{</span>
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">addWater</span><span class="p">();</span>
+	<span class="kt">void</span> <span class="n">addMat</span><span class="p">();</span>
+	<span class="kt">void</span> <span class="n">addOther</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Tea</span> <span class="o">:</span><span class="k">public</span> <span class="n">AbcDrinking</span> <span class="p">{</span>
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">addWater</span><span class="p">();</span>
+	<span class="kt">void</span> <span class="n">addMat</span><span class="p">();</span>
+	<span class="kt">void</span> <span class="n">addOther</span><span class="p">();</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">Drinking.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Drinking.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="n">AbcDrinking</span><span class="o">::</span><span class="n">Make</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">addWater</span><span class="p">();</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">addMat</span><span class="p">();</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">addOther</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Cof</span><span class="o">::</span><span class="n">addWater</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"add water, "</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Cof</span><span class="o">::</span><span class="n">addMat</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"add coffee, "</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Cof</span><span class="o">::</span><span class="n">addOther</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"add milk."</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Tea</span><span class="o">::</span><span class="n">addWater</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"add mineral water, "</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Tea</span><span class="o">::</span><span class="n">addMat</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"add tea, "</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="n">Tea</span><span class="o">::</span><span class="n">addOther</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"add wolfberry. "</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">main.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "Drinking.h"
+</span>
+<span class="cm">/*该函数构成一个接口*/</span>
+<span class="kt">void</span> <span class="nf">Producer</span><span class="p">(</span><span class="n">AbcDrinking</span><span class="o">*</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">p</span><span class="o">-&gt;</span><span class="n">Make</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">Cof</span> <span class="n">cof</span><span class="p">;</span> <span class="n">Tea</span> <span class="n">tea</span><span class="p">;</span>
+	<span class="n">Producer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cof</span><span class="p">);</span> <span class="n">Producer</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tea</span><span class="p">);</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="前置声明">前置声明</h2>
+
+<p>这是在写示例时遇到的一个坑。在声明英雄类时，英雄类之间产生了互相引用的问题，结果就是编译器一直报<a href="https://docs.microsoft.com/zh-cn/cpp/error-messages/compiler-errors-1/compiler-error-c2061?f1url=https%3A%2F%2Fmsdn.microsoft.com%2Fquery%2Fdev16.query%3FappId%3DDev16IDEF1%26l%3DZH-CN%26k%3Dk(C2061)%26rd%3Dtrue%26f%3D255%26MSPPError%3D-2147217396&amp;view=vs-2019">C2061</a>错误。原因就在于如下代码：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Garen</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="p">...</span>
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Yi</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="p">...</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="p">...</span>
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Garen</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="p">...</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>这段代码不管是写在一个文件中还是分开写在多个文件中，都存在互相引用的问题。解决此问题的方式是使用前置引用：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Yi</span><span class="p">;</span>    <span class="c1">// 为避免互相引用所必要的前置声明</span>
+
+<span class="k">class</span> <span class="nc">Garen</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="p">...</span>
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Yi</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="p">...</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">Yi</span> <span class="o">:</span><span class="k">public</span> <span class="n">Hero</span> <span class="p">{</span>
+	<span class="p">...</span>
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">Attack</span><span class="p">(</span><span class="n">Garen</span><span class="o">*</span> <span class="n">p</span><span class="p">);</span>
+	<span class="p">...</span>
+<span class="p">};</span>
+</code></pre></div></div>
+:ET

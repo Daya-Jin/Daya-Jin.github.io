@@ -1,0 +1,337 @@
+I"��<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a>    <ul>
+      <li><a href="#思路" id="markdown-toc-思路">思路</a></li>
+      <li><a href="#预处理" id="markdown-toc-预处理">预处理</a>        <ul>
+          <li><a href="#usersdat" id="markdown-toc-usersdat">users.dat</a></li>
+          <li><a href="#moviesdat" id="markdown-toc-moviesdat">movies.dat</a></li>
+          <li><a href="#ratingsdat" id="markdown-toc-ratingsdat">ratings.dat</a></li>
+          <li><a href="#分割与保存" id="markdown-toc-分割与保存">分割与保存</a></li>
+        </ul>
+      </li>
+      <li><a href="#模型设计" id="markdown-toc-模型设计">模型设计</a>        <ul>
+          <li><a href="#embedding" id="markdown-toc-embedding">Embedding</a></li>
+          <li><a href="#textcnn" id="markdown-toc-textcnn">TextCNN</a></li>
+          <li><a href="#fc" id="markdown-toc-fc">FC</a></li>
+          <li><a href="#输出" id="markdown-toc-输出">输出</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>本文简单介绍使用embedding技术来实现一个电影推荐算法，当然，推荐算法背后的核心任务是评分预测，即回归问题。</p>
+
+<p>既然是电影推荐，所用数据肯定是经典的MovieLens。MovieLens-1M数据包含三张表：</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">users.dat</code>，6040名用户的信息，包含性别、年龄、职业、邮编等信息</li>
+  <li><code class="language-plaintext highlighter-rouge">movies.dat</code>，3900部电影的信息，包含电影名、类别等信息</li>
+  <li><code class="language-plaintext highlighter-rouge">ratings.dat</code>，评分数据，记录了用户对电影的评分信息</li>
+</ul>
+
+<h2 id="思路">思路</h2>
+
+<p>对于用户数据，选择放弃邮编特征，因为这里假定用户对电影的评分与地域无关。然后将年龄与性别拼接构成一个组合特征，再对所有特征编码即可。</p>
+
+<p>电影数据虽然原生只包含电影名与类别两个特征，但是可以从电影名中提取一个年份特征出来。同时电影名作为一个字符串，可以使用NLP相关技术来抽取特征。注意类别特征是一个多属性特征，必要时需要做截断或者填充。</p>
+
+<p>评分数据没啥好说的，一个连接，所有用户特征与电影特征都需要拼接到该表上。</p>
+
+<p>对特征编码之后，在网络的第一层设置并行的embedding层；embedding层后接的是并行的FC层，用于对各特征的embedding进行降维；然后对所有的user特征拼接起来做全连接得到user特征，movie的所有特征拼起来做全连接得到movie特征；对user特征与movie特征做点积得到预测评分。以上处理过程有两个特征是例外。电影标题特征是一个文本序列，得到嵌入后可以使用NLP技术来提取特征；另一个是年份特征，电影年份特征是一个non-categorical特征，因此不对年份特征做embedding，只对其做一个非线性变换。</p>
+
+<p>整个模型框架如下图所示：</p>
+
+<p><img src="/img/EmbBasedMovieRec.svg" alt="" /></p>
+
+<h2 id="预处理">预处理</h2>
+
+<h3 id="usersdat">users.dat</h3>
+
+<p>用户信息表非常规整，所以需要做的处理也比较简单。假设用户对电影的评分不受地域影响，那么可以放弃邮编特征：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">user_df</span><span class="p">.</span><span class="n">drop</span><span class="p">([</span><span class="s">'Zip-code'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>对特征进行整形编码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gender2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">gender</span><span class="p">:</span> <span class="n">idx</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">gender</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Gender'</span><span class="p">].</span><span class="n">unique</span><span class="p">()))}</span>
+<span class="n">age2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">age</span><span class="p">:</span> <span class="n">idx</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">age</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age'</span><span class="p">].</span><span class="n">unique</span><span class="p">()))}</span>
+<span class="n">occupation2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">occu</span><span class="p">:</span> <span class="n">idx</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">occu</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Occupation'</span><span class="p">].</span><span class="n">unique</span><span class="p">()))}</span>
+
+<span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Gender'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Gender'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">gender2id</span><span class="p">)</span>
+<span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">age2id</span><span class="p">)</span>
+<span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Occupation'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Occupation'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">occupation2id</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>将年龄与性别拼接形成一个组合特征：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age_Gender'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span>
+    <span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Gender'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="n">agegen2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">agegen</span><span class="p">:</span> <span class="n">idx</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">agegen</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age_Gender'</span><span class="p">].</span><span class="n">unique</span><span class="p">()))}</span>
+<span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age_Gender'</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Age_Gender'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">agegen2id</span><span class="p">)</span>
+
+<span class="n">user_df</span><span class="p">.</span><span class="n">drop</span><span class="p">([</span><span class="s">'Age'</span><span class="p">,</span> <span class="s">'Gender'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="moviesdat">movies.dat</h3>
+
+<p>提取年份特征：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Year'</span><span class="p">]</span> <span class="o">=</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">extract</span><span class="p">(</span><span class="s">'({})'</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span>
+    <span class="s">'\([\d]{4}\)'</span><span class="p">),</span> <span class="n">expand</span><span class="o">=</span><span class="bp">False</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="s">'[\(\)]'</span><span class="p">,</span> <span class="s">''</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="s">'int32'</span><span class="p">)</span>  <span class="c1"># 提取年份
+</span><span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">]</span> <span class="o">=</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span>
+    <span class="s">'\ \([\d]{4}\)'</span><span class="p">,</span> <span class="s">''</span><span class="p">)</span>  <span class="c1"># 删除年份
+</span></code></pre></div></div>
+
+<p>把类别特征切割成列表，同时做规整化处理：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">genre_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">genre</span> <span class="ow">in</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Genres'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">'|'</span><span class="p">):</span>
+    <span class="n">genre_set</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">genre</span><span class="p">)</span>
+<span class="n">genre_set</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="s">'&lt;PAD&gt;'</span><span class="p">)</span>
+
+<span class="c1"># 类别转id
+</span><span class="n">genre2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">genre</span><span class="p">:</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">genre</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">genre_set</span><span class="p">)}</span>
+<span class="c1"># 多类别转list
+</span><span class="n">genres2list</span> <span class="o">=</span> <span class="p">{</span><span class="n">genres</span><span class="p">:</span> <span class="p">[</span><span class="n">genre2id</span><span class="p">[</span><span class="n">genre</span><span class="p">]</span> <span class="k">for</span> <span class="n">genre</span> <span class="ow">in</span> <span class="n">genres</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">'|'</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">genres</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Genres'</span><span class="p">].</span><span class="n">unique</span><span class="p">())}</span>
+
+<span class="c1"># 规整化处理
+</span><span class="n">genres_max</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># 设定最大允许的长度
+</span><span class="k">for</span> <span class="n">genres</span> <span class="ow">in</span> <span class="n">genres2list</span><span class="p">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">genres2list</span><span class="p">[</span><span class="n">genres</span><span class="p">]</span> <span class="o">=</span> <span class="n">genres2list</span><span class="p">[</span><span class="n">genres</span><span class="p">][:</span><span class="n">genres_max</span><span class="p">]</span>  <span class="c1"># 超出长度做截断
+</span>    <span class="k">for</span> <span class="n">pad_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">genres_max</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">genres2list</span><span class="p">[</span><span class="n">genres</span><span class="p">])):</span>  <span class="c1"># 需要填充的数量
+</span>        <span class="n">genres2list</span><span class="p">[</span><span class="n">genres</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">genre2id</span><span class="p">[</span><span class="s">'&lt;PAD&gt;'</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>对电影标题做同样的处理：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 单词集
+</span><span class="n">word_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">split</span><span class="p">():</span>
+    <span class="n">word_set</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+<span class="n">word_set</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="s">'&lt;PAD&gt;'</span><span class="p">)</span>
+<span class="n">word2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">word</span><span class="p">:</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">word_set</span><span class="p">)}</span>
+<span class="n">title2list</span> <span class="o">=</span> <span class="p">{</span><span class="n">title</span><span class="p">:</span> <span class="p">[</span><span class="n">word2id</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">title</span><span class="p">.</span><span class="n">split</span><span class="p">()]</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">].</span><span class="n">unique</span><span class="p">())}</span>
+
+<span class="c1"># 规整化处理
+</span><span class="n">title_max</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="k">for</span> <span class="n">title</span> <span class="ow">in</span> <span class="n">title2list</span><span class="p">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">title2list</span><span class="p">[</span><span class="n">title</span><span class="p">]</span> <span class="o">=</span> <span class="n">title2list</span><span class="p">[</span><span class="n">title</span><span class="p">][:</span><span class="n">title_max</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">pad_num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">title_max</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">title2list</span><span class="p">[</span><span class="n">title</span><span class="p">])):</span>
+        <span class="n">title2list</span><span class="p">[</span><span class="n">title</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">word2id</span><span class="p">[</span><span class="s">'&lt;PAD&gt;'</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>对所有特征编码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mid2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">mid</span><span class="p">:</span> <span class="n">idx</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">mid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'MovieID'</span><span class="p">].</span><span class="n">unique</span><span class="p">()))}</span>
+<span class="n">year2id</span> <span class="o">=</span> <span class="p">{</span><span class="n">year</span><span class="p">:</span> <span class="n">idx</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">year</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Year'</span><span class="p">].</span><span class="n">unique</span><span class="p">()))}</span>
+
+<span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'MovieID'</span><span class="p">]</span> <span class="o">=</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'MovieID'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">mid2id</span><span class="p">)</span>
+<span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">]</span> <span class="o">=</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Title'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">title2list</span><span class="p">)</span>
+<span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Genres'</span><span class="p">]</span> <span class="o">=</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Genres'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">genres2list</span><span class="p">)</span>
+<span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Year'</span><span class="p">]</span> <span class="o">=</span> <span class="n">movie_df</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s">'Year'</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">year2id</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="ratingsdat">ratings.dat</h3>
+
+<p>表合并：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">rating_df</span><span class="p">.</span><span class="n">drop</span><span class="p">([</span><span class="s">'ts'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pd</span><span class="p">.</span><span class="n">merge</span><span class="p">(</span><span class="n">user_df</span><span class="p">,</span> <span class="n">rating_df</span><span class="p">),</span> <span class="n">movie_df</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="分割与保存">分割与保存</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">train_ratio</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="n">cut_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">*</span> <span class="n">train_ratio</span><span class="p">)</span>
+<span class="n">train_df</span><span class="p">,</span> <span class="n">test_df</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="n">cut_idx</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">cut_idx</span><span class="p">:]</span>
+<span class="n">np</span><span class="p">.</span><span class="n">save</span><span class="p">(</span><span class="s">'train.npy'</span><span class="p">,</span> <span class="n">train_df</span><span class="p">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">np</span><span class="p">.</span><span class="n">save</span><span class="p">(</span><span class="s">'test.npy'</span><span class="p">,</span> <span class="n">test_df</span><span class="p">.</span><span class="n">values</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="模型设计">模型设计</h2>
+
+<h3 id="embedding">Embedding</h3>
+
+<p>设置三种嵌入维度：$32$、$16$、$8$，对各特征的嵌入维度如下表所示：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Feature</th>
+      <th style="text-align: center">Emb Size</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">u_id</td>
+      <td style="text-align: center">$32$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">u_occu</td>
+      <td style="text-align: center">$8$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">u_agegen</td>
+      <td style="text-align: center">$8$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">m_id</td>
+      <td style="text-align: center">$32$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">m_tit</td>
+      <td style="text-align: center">$16$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">m_year</td>
+      <td style="text-align: center">$1$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">m_gen</td>
+      <td style="text-align: center">$8$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>以上特征中除了<code class="language-plaintext highlighter-rouge">m_tit</code>外，其他特征嵌入后得到的都应是一个一维向量。而<code class="language-plaintext highlighter-rouge">m_gen</code>因为是一个多值特征，一个样本中的每个genre都会得到一个嵌入向量，所以要做压缩，求和或均化。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'user_embedding'</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">random_uniform_initializer</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)):</span>
+    <span class="c1"># u_id嵌入
+</span>    <span class="n">uid_emb_lookup</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'uid_embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">u_id_size</span><span class="p">,</span> <span class="n">u_id_emb_size</span><span class="p">],</span>
+                                     <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">uid_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">uid_emb_lookup</span><span class="p">,</span> <span class="n">u_id</span><span class="p">)</span>
+
+    <span class="c1"># u_occu嵌入
+</span>    <span class="n">uoccu_emb_lookup</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'uoccu_embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">u_occu_size</span><span class="p">,</span> <span class="n">u_occu_emb_size</span><span class="p">],</span>
+                                       <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">uoccu_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">uoccu_emb_lookup</span><span class="p">,</span> <span class="n">u_occu</span><span class="p">)</span>
+
+    <span class="c1"># u_age_gender嵌入
+</span>    <span class="n">uagegen_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'uagegen_embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">u_agegen_size</span><span class="p">,</span> <span class="n">u_agegen_emb_size</span><span class="p">],</span>
+                                  <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">uagegen_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">uagegen_emb</span><span class="p">,</span> <span class="n">u_agegen</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s">'movie_embedding'</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">random_uniform_initializer</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)):</span>
+    <span class="n">mid_emb_lookup</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'mid_embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">m_id_size</span><span class="p">,</span> <span class="n">m_id_emb_size</span><span class="p">],</span>
+                                     <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">mid_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">mid_emb_lookup</span><span class="p">,</span> <span class="n">m_id</span><span class="p">)</span>
+
+    <span class="n">mtit_emb_lookup</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'mtit_embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">m_voc_size</span><span class="p">,</span> <span class="n">m_tit_emb_size</span><span class="p">],</span>
+                                      <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">mtit_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">mtit_emb_lookup</span><span class="p">,</span> <span class="n">m_tit</span><span class="p">)</span>
+
+    <span class="n">mgen_emb_lookup</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">'mgen_embedding'</span><span class="p">,</span> <span class="p">[</span><span class="n">m_gen_size</span><span class="p">,</span> <span class="n">m_gen_emb_size</span><span class="p">],</span>
+                                      <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">mgen_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">mgen_emb_lookup</span><span class="p">,</span> <span class="n">m_gen</span><span class="p">)</span>
+    <span class="n">mgen_emb</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">mgen_emb</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># 查找得到的多重emb做平均
+</span></code></pre></div></div>
+
+<h3 id="textcnn">TextCNN</h3>
+
+<p>TextCNN使用三种不同尺寸的核：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Kernel Size</th>
+      <th style="text-align: center">Depth</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">$1$</td>
+      <td style="text-align: center">$8$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">$2$</td>
+      <td style="text-align: center">$4$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">$3$</td>
+      <td style="text-align: center">$2$</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 文本卷积网络参数
+</span><span class="n">n_txt_cnn_kernels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">text_cnn_ksize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s">'TextCNN'</span><span class="p">):</span>
+    <span class="c1"># 在最后增加一维，扩成四维向量(batch_size,tit_len,m_tit_emb_size,1)
+</span>    <span class="n">mtit_emb_exp</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">mtit_emb</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">layers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">n_txt_cnn_kernels</span><span class="p">)):</span>
+        <span class="n">conv</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">mtit_emb_exp</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">n_txt_cnn_kernels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span>
+                                    <span class="n">text_cnn_ksize</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">m_tit_emb_size</span><span class="p">),</span>
+                                <span class="n">padding</span><span class="o">=</span><span class="s">'same'</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+        <span class="c1"># 一次性pooling
+</span>        <span class="n">pool</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">max_pooling2d</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">pool_size</span><span class="o">=</span><span class="p">(</span><span class="n">m_tit_size</span><span class="o">-</span><span class="n">text_cnn_ksize</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+    <span class="n">tit_pool</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">concat</span><span class="p">(</span><span class="n">layers</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">tit_dropout</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">tit_pool</span><span class="p">),</span>
+                                    <span class="n">rate</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">is_training</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="fc">FC</h3>
+
+<p>所有的embedding特征与CNN特征都经过一个FC层，目的是降维与特征提取，然后将用户(电影)端的所有FC输出拼接起来再经过一个FC层得到用户(电影)特征。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># FC层
+</span><span class="n">unit_fc1</span> <span class="o">=</span> <span class="mi">1</span>    <span class="c1"># 电影年份是一个单独标量，同样经过一层FC
+</span><span class="n">unit_fc2</span> <span class="o">=</span> <span class="mi">16</span>    <span class="c1"># 各embedding特征经过的FC层
+</span><span class="n">unit_fc3</span> <span class="o">=</span> <span class="mi">128</span>    <span class="c1"># 单端特征的联合FC
+</span>
+<span class="k">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s">'user_fc'</span><span class="p">):</span>
+    <span class="n">uid_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">uid_emb</span><span class="p">,</span> <span class="n">unit_fc2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">,</span>
+                             <span class="n">name</span><span class="o">=</span><span class="s">'uid_fc'</span><span class="p">)</span>
+    <span class="n">uoccu_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">uoccu_emb</span><span class="p">,</span> <span class="n">unit_fc2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">,</span>
+                               <span class="n">name</span><span class="o">=</span><span class="s">'uoccu_fc'</span><span class="p">)</span>
+    <span class="n">uagegen_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">uagegen_emb</span><span class="p">,</span> <span class="n">unit_fc2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">,</span>
+                                 <span class="n">name</span><span class="o">=</span><span class="s">'uagegen_fc'</span><span class="p">)</span>
+
+    <span class="n">user_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">concat</span><span class="p">([</span><span class="n">uid_fc</span><span class="p">,</span> <span class="n">uoccu_fc</span><span class="p">,</span> <span class="n">uagegen_fc</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">user_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">user_fc</span><span class="p">,</span> <span class="n">unit_fc3</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">user_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">user_fc</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">is_training</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="s">'user_fc'</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s">'movie_fc'</span><span class="p">):</span>
+    <span class="n">mid_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">mid_emb</span><span class="p">,</span> <span class="n">unit_fc2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">mgen_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">mgen_emb</span><span class="p">,</span> <span class="n">unit_fc2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">mtit_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">tit_dropout</span><span class="p">,</span> <span class="n">unit_fc2</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">myear_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">m_year</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">unit_fc1</span><span class="p">,</span>
+                               <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span> 
+    <span class="n">myear_fc</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">myear_fc</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>    <span class="c1"># 为了concat转换类型
+</span>
+    <span class="n">movie_fc</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">concat</span><span class="p">([</span><span class="n">mid_fc</span><span class="p">,</span><span class="n">mgen_fc</span><span class="p">,</span><span class="n">mtit_fc</span><span class="p">,</span><span class="n">myear_fc</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">movie_fc</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dense</span><span class="p">(</span><span class="n">movie_fc</span><span class="p">,</span><span class="n">unit_fc3</span><span class="p">,</span><span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">movie_fc</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">movie_fc</span><span class="p">,</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span><span class="n">training</span><span class="o">=</span><span class="n">is_training</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="输出">输出</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">unit_O</span> <span class="o">=</span> <span class="mi">1</span>    <span class="c1"># 输出一个分数
+</span>
+<span class="n">logits</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">user_fc</span> <span class="o">*</span> <span class="n">movie_fc</span><span class="p">,</span>
+                                      <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># 输出分数，把向量扩成矩阵
+</span></code></pre></div></div>
+
+<p>以上就是核心代码的展示与注解，完整代码<a href="https://github.com/Daya-Jin/DL_for_learner/tree/master/RecSys">见此</a>。默认参数下5个epoch达到的验证MSE为0.83左右。</p>
+
+<p><img src="/img/2019-05-17_10-58-43.bmp" alt="" /></p>
+:ET

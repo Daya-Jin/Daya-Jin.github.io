@@ -1,0 +1,103 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#xgboost" id="markdown-toc-xgboost">XGBoost</a>    <ul>
+      <li><a href="#模型" id="markdown-toc-模型">模型</a></li>
+      <li><a href="#加速" id="markdown-toc-加速">加速</a></li>
+      <li><a href="#问题" id="markdown-toc-问题">问题</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="xgboost">XGBoost</h1>
+
+<h2 id="模型">模型</h2>
+
+<p>K个集成树模型的输出为（加法模型，每次boost只针对上次的残差）：</p>
+
+\[\hat{y_{i}}=\phi(X_{i})=\sum\limits_{k=1}^{K}f_{k}(X_i)\]
+
+<p>带正则项的目标函数为：</p>
+
+\[L(\phi)=\sum\limits_{i}l(\hat{y}_i,y_{i})+\sum\limits_{k}\Omega(f_{k})\]
+
+<p>其中</p>
+
+\[\Omega(f_{k})=\gamma{T}+\frac{1}{2}\lambda\vert\vert{w}\vert\vert^{2}\]
+
+<p>那么，在第t轮迭代时的目标函数可以写成：</p>
+
+\[L^{(t)}=\sum\limits_{i=1}^{n}l(y_{i},\hat{y}_{i}^{(t-1)}+f_{t}(X_{i}))+\Omega(f_{t})\]
+
+<p>根据泰勒公式</p>
+
+\[f(x+\Delta{x})≈f(x)+f'(x)\Delta{x}+\frac{1}{2}f''(x)\Delta{x}^{2}\]
+
+<p>设$g_{i}$、$h_{i}$分别为损失函数$l(y,\hat{y})$关于$\hat{y}^{t-1}$的一阶偏导与二阶偏导，第t轮的目标函数展开到二阶可写成</p>
+
+\[L^{(t)}≈\sum\limits_{i=1}^{n}[l(y_{i},\hat{y}_{i}^{(t-1)})+g_{i}f_{t}(X_{i})+\frac{1}{2}h_{i}f_{t}^{2}(X_{i})]+\Omega(f_{t})\]
+
+<p>省略常数项（上一轮的伪残差）并展开正则项，可写成</p>
+
+\[\tilde{L}^{(t)}=\sum\limits_{i=1}^{n}[g_{i}f_{t}(X_{i})+\frac{1}{2}h_{i}f_{t}^{2}(X_{i})]+\gamma{T}+\frac{1}{2}\lambda\sum\limits_{j=1}^{T}w_{j}^{2}\]
+
+<p>当基模型使用树模型时，其数学表达式可写为：</p>
+
+\[f_{k}(X_{i})=w_{q(X_{i})}\]
+
+<p>其中$q(X_{i})$将样本映射到某一叶子节点，$w_{j}$表示某一叶子节点的输出值。</p>
+
+<p>再设$I_{j}$表示第$j$个叶子节点中所有的样本，目标函数可写成：</p>
+
+\[\begin{aligned}
+\tilde{L}^{(t)} &amp;≈ \sum\limits_{j=1}^{T}[(\sum\limits_{i\in{I_{j}}}g_{i})w_{j}+\frac{1}{2}(\sum\limits_{i\in{I_{j}}}h_{i})w_{j}^{2}]+\gamma{T}+\frac{1}{2}\lambda\sum\limits_{i\in{I_{j}}}^{T}w_{j}^{2} \\
+&amp;= \sum\limits_{j=1}^{T}[(\sum\limits_{i\in{I_{j}}}g_{i})w_{j}+\frac{1}{2}(\sum\limits_{i\in{I_{j}}}h_{i}+\lambda)w_{j}^{2}]+\gamma{T} \\
+&amp;= \sum\limits_{j=1}^{T}[G_{j}w_{j}+\frac{1}{2}(H_{j}+\lambda)w_{j}^{2}]+\gamma{T} \\
+\end{aligned}\]
+
+<p>其中$G_{j}=\sum\limits_{i\in{I_{j}}}g_{i}$，$H_{j}=\sum\limits_{i\in{I_{j}}}h_{i}$，则令偏导等于零时的最优参数为$w_{j}^{*}=-\frac{G_{j}}{H_{j}+\lambda}$，最小化后的损失为$\tilde{L}<em>{min}=-\frac{1}{2}\sum\limits</em>{j=1}^{T}\frac{G_{j}^{2}}{H_{j}+\lambda}+\gamma{T}$，可以看出XGB的总损失跟叶子节点的梯度还有叶子数有关，可以推出XGB在划分数据集（生成树）时的增益：</p>
+
+\[Gain=\frac{1}{2}[\frac{G_{L}^{2}}{H_{L}+\lambda}+\frac{G_{R}^{2}}{H_{R}+\lambda}-\frac{(G_{L}+G_{R})^{2}}{H_{L}+H_{R}+\lambda}]-\gamma\]
+
+<p>其中$\gamma$是一个分裂阈值。除了损失函数中的正则项，XGB还支持<strong>列采样</strong>(column subsampling)来避免过拟合。</p>
+
+<p>从上述推导过程中可以看出，XGB在每次做test时直接求出一个最优解，然后根据这个最优解来作为增益指导生成决策树。</p>
+
+<h2 id="加速">加速</h2>
+
+<p><strong>近似分割算法</strong></p>
+
+<p>在DT算法算法中，关键就在于找到一个最佳分割点，如CART对连续型特征的处理，必须先对特征的所有值进行排序，然后再遍历尝试所有特征中所有可能的切分点，找到一个最佳位置，这种操作计算量很大。XGB采用了一种快速的近似分割算法：根据百分位点选出一些<strong>候选分割点</strong>(proposed candidate points)，从这些候选分割点中选取分割位置。这种近似分割算法有有两种实现方式，一种是<strong>全局</strong>(global)的，在一棵树生成之前就定好候选分割点，然后对这棵树的所有分割均在这些全局分割点上进行；另一种是<strong>局部</strong>(local)的，在每次分割时都重新推举候选分割点。全局实现的步骤数要少于局部实现，但是却需要更多的候选分割点，因为局部实现能在每次分割后<strong>重调</strong>(refine)候选分割点。</p>
+
+<p>值得一提的是，在跟据分位点推举候选分割点时，这个百分点指的并不是统计意义上的百分点，而是根据二阶梯度确定的分位点：</p>
+
+\[r_k(z)=\frac{1}{\sum_{D_{k}}h}\sum\limits_{D_{k},x&lt;z}h\]
+
+<p>其中$D_{k}$表示第$k$个特征集，$h$表示二阶特征。那么近似分割算法在第$k$个特征上找到的$l$个候选分割点需要满足以下条件：</p>
+
+\[|r_{k}(s_{k,j})-r_{k(s_{k,j+1})}|&lt;{\epsilon}, \quad s_{k,1}={\min}X_{\cdot k},s_{k,l}={\max}X_{\cdot k}\]
+
+<p>其中$s_{k,j}$表示在第$k$个特征上的第$j$个候选分割点。</p>
+
+<p><strong>稀疏感知</strong></p>
+
+<p>在DT算法中分割遇到缺失值时，样本会复制多份进入所有子树；而在XGB中，为带缺失值的样本或从未出现过的值规定了一个<strong>默认方向</strong>(default direction)，这个特定特征下的默认方向也是从数据中学到的。在模型训练，即树的生成时，假设在对第$k$个特征做test，数据中某些样本的第$k$个特征是缺失的，那么在确定分割点与默认方向时，首先尝试将所有缺失值样本划到左边计算一次$gain_{left}$，再尝试将缺失值样本划到右边计算一次$gain_{right}$，增益值最大的方向被设为默认方向。</p>
+
+<p><strong>列压缩存储</strong></p>
+
+<p>GBDT算法最耗时的部分就在于数据的列排序与分割点的确定，XGB采用<strong>CSC</strong>(Compressed Sparse Column)形式，把数据的每一列排好序后存储在一个<strong>块</strong>(block)单元中，这样一来就可以同时对多个特征(列)做test，即实现了特征间的并行化，甚至在block size小于样本数时还可以实现特征内的并行。不仅如此，列式存储还有几个好处：(1)不同的块可以存储在硬盘甚至是分布式的；(2)不同的块代表不同的特征，便于实现列采样。需要注意的是，由于XGB的稀疏感知特性，某特征下的缺失值并不会被存储。</p>
+
+<p><strong>cache</strong></p>
+
+<p>(cache层的优化这里没看懂，大致是讲行索引与存储地址不一致，通过每个线程开辟一个内部缓冲区来实现预取)</p>
+
+<h2 id="问题">问题</h2>
+
+<p><strong>为什么要将GBDT的损失函数使用泰勒二阶展开？</strong></p>
+
+<p>首先，凸优化求最小值的充要条件是一阶导数为$0$，二阶导数大于$0$；目标函数使用二阶导数展开，精确度高于一阶；待补充…</p>
+
+<p><strong>GBDT与XGB的区别</strong></p>
+
+<p>GDBT是以树模型为基模型的GBM，只指出了每一颗新树要去拟合损失函数关于前一轮总模型的负梯度，而对于每一颗树怎么生成并没有指明。GBM将子模型看成是参数，使用梯度下降法来得到一个最优函数。</p>
+
+<p>XGB是GBDT的一种实现，也是将子模型看成是参数，但是使用牛顿法来得到一个最优函数，并且将子模型(树模型)的表达式具体化，直接从损失函数推到了树的划分增益，求出了最优解，并使用最优解指导每棵树的生成。</p>
+:ET

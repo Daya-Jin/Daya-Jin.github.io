@@ -1,0 +1,294 @@
+I"yP<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a>    <ul>
+      <li><a href="#rdd" id="markdown-toc-rdd">RDD</a></li>
+      <li><a href="#dataframe" id="markdown-toc-dataframe">DataFrame</a></li>
+      <li><a href="#sql" id="markdown-toc-sql">SQL</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>pyspark下的子模块主要有：</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">pyspark.sql</code>：关于SQL和DataFrames的模块</li>
+  <li><code class="language-plaintext highlighter-rouge">pyspark.streaming</code>：流式计算模块</li>
+  <li><code class="language-plaintext highlighter-rouge">pyspark.ml</code>：基于DataFrame的机器学习模块</li>
+</ul>
+
+<p>pyspark的初始代码一般为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="p">.</span><span class="n">builder</span> \
+    <span class="p">.</span><span class="n">master</span><span class="p">(</span><span class="s">"local"</span><span class="p">)</span> \
+    <span class="p">.</span><span class="n">appName</span><span class="p">(</span><span class="s">"Demo"</span><span class="p">)</span> \
+    <span class="p">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">spark</span><span class="p">.</span><span class="n">sparkContext</span>    <span class="c1"># 开启一个spark上下文会话
+</span></code></pre></div></div>
+
+<p>SparkContext是spark功能的主要入口，在代码中常表示为<code class="language-plaintext highlighter-rouge">sc</code>。<code class="language-plaintext highlighter-rouge">sc</code>对象的<a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.SparkContext">常用方法</a>：</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">parallelize</code>：以一个本地Python集合生成一个RDD对象，推荐使用<code class="language-plaintext highlighter-rouge">range</code></li>
+</ul>
+
+<h2 id="rdd">RDD</h2>
+
+<p>pyspark中的基础数据结构为<strong>弹性分布式数据集</strong>(Resilient Distributed Dataset)，RDD具有如下下特性：</p>
+<ul>
+  <li>In-memory Computation：在内存中进行计算</li>
+  <li>Lazy Evaluation：使用DAG保存操作，只在必要时才会做计算</li>
+  <li>Immutability：RDD是Read-Only的</li>
+  <li>Cacheable or Persistence：可存放在内存或硬盘中</li>
+  <li>Partitioned：数据分布式存储在各节点中</li>
+  <li>Fault Tolerance：分布式产生了容错性</li>
+  <li>Coarse-grained Operations：RDD的操作是粗粒度(一批一批)的，并不是元素级的操作</li>
+</ul>
+
+<p>使用序列数据构造一个rdd并查看前5个元素：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="p">.</span><span class="n">parallelize</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">rdd</span><span class="p">.</span><span class="n">take</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>[0, 1, 2, 3, 4]</p>
+</blockquote>
+
+<p>应用Python中的同名高阶函数：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rdd.map(lambda x: x*x).take(5)
+</code></pre></div></div>
+
+<blockquote>
+  <p>[0, 1, 4, 9, 16]</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rdd.filter(lambda x: x &gt; 5).take(5)
+</code></pre></div></div>
+
+<blockquote>
+  <p>[6, 7, 8, 9]</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rdd.reduce(lambda x, y: x+y)
+</code></pre></div></div>
+
+<blockquote>
+  <p>45</p>
+</blockquote>
+
+<p>使用RDD的<code class="language-plaintext highlighter-rouge">collect()</code>方法可以将RDD转成Python数据类型：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rdd.collect()
+</code></pre></div></div>
+
+<blockquote>
+  <p>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]</p>
+</blockquote>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD">RDD常用方法</a></th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.collect">collect</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.count">count</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.distinct">distinct</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.filter">filter</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.first">first</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.flatMap">flatMap</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.groupBy">groupBy</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.join">join</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.map">map</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.max">max</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.mean">mean</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.min">min</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.randomSplit">randomSplit</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.reduce">reduce</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.sample">sample</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.sortBy">sortBy</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.stats">stats</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.stdev">stdev</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.sum">sum</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.take">take</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.RDD.variance">variance</a></td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="dataframe">DataFrame</h2>
+
+<p>pyspark另一种常用数据结构是DataFrame，而DF又可分为Row和Column。</p>
+
+<p>读入文件生成DF的示例代码为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="p">.</span><span class="n">read</span><span class="p">.</span><span class="n">csv</span><span class="p">(</span><span class="s">'/home/hujinzhi/PySpark/dataset/train.csv'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">inferSchema</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>只选择指定列，并显示前3行：</p>
+
+<pre><code class="language-Python">cols = ['Time', 'RoomArea', 'RoomDir', 'Bedroom',
+        'Livingroom', 'Rental']    # 只选取部分列做演示
+df = df.select(cols)
+df.show(3)
+</code></pre>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+----+-----------+-------+-------+----------+-----------+ \
+|Time|   RoomArea|RoomDir|Bedroom|Livingroom|     Rental| \
++----+-----------+-------+-------+----------+-----------+ \
+|   2|0.020854022|     WS|      3|         2|3.904923599| \
+|   3|0.010923535|     ES|      2|         1|2.546689304| \
+|   3|0.010923535|     ES|      2|         1|2.546689304| \
++----+-----------+-------+-------+----------+-----------+ \
+</code></pre></div></div>
+
+<p>显示DF的列信息：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="n">printSchema</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root
+ |-- Time: integer (nullable = true)
+ |-- RoomArea: double (nullable = true)
+ |-- RoomDir: string (nullable = true)
+ |-- Bedroom: integer (nullable = true)
+ |-- Livingroom: integer (nullable = true)
+ |-- Rental: double (nullable = true)
+</code></pre></div></div>
+
+<p>对DF中的条目进行计数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="n">count</span><span class="p">()</span>    <span class="c1"># 对行计数
+</span></code></pre></div></div>
+
+<blockquote>
+  <p>196539</p>
+</blockquote>
+
+<p>输出描述性统计信息：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="n">select</span><span class="p">([</span><span class="s">'Time'</span><span class="p">,</span><span class="s">'RoomArea'</span><span class="p">,</span><span class="s">'Bedroom'</span><span class="p">,</span><span class="s">'Rental'</span><span class="p">]).</span><span class="n">summary</span><span class="p">().</span><span class="n">show</span><span class="p">()</span>    <span class="c1"># 描述统计信息
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-------+------------------+--------------------+------------------+-----------------+
+|summary|              Time|            RoomArea|           Bedroom|           Rental|
++-------+------------------+--------------------+------------------+-----------------+
+|  count|            196539|              196539|            196539|           196539|
+|   mean|2.1152290385114405|0.013138849743341008| 2.236634968123375|7.949313378405461|
+| stddev|0.7869801628627767|0.008103513291823544|0.8969612494208798|6.310608757211932|
+|    min|                 1|                 0.0|                 0|              0.0|
+|    25%|                 1|         0.009268454|                 2|      4.923599321|
+|    50%|                 2|         0.012909633|                 2|       6.62139219|
+|    75%|                 3|          0.01489573|                 3|      8.998302207|
+|    max|                 3|                 1.0|                11|            100.0|
++-------+------------------+--------------------+------------------+-----------------+
+</code></pre></div></div>
+
+<p>条件筛选：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="n">where</span><span class="p">((</span><span class="n">df</span><span class="p">.</span><span class="n">RoomArea</span> <span class="o">&gt;</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">&amp;</span>
+         <span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">Time</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)).</span><span class="n">select</span><span class="p">(</span><span class="s">'Time'</span><span class="p">,</span> <span class="s">'RoomArea'</span><span class="p">,</span> <span class="s">'RoomDir'</span><span class="p">,</span> <span class="s">'Rental'</span><span class="p">).</span><span class="n">show</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># 条件筛选
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+----+-----------+-------+-----------+
+|Time|   RoomArea|RoomDir|     Rental|
++----+-----------+-------+-----------+
+|   3|0.330354187|      W|5.602716469|
+|   3|0.490897054|      S|8.896434635|
+|   3|0.490897054|      S|8.896434635|
++----+-----------+-------+-----------+
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame">DF常用方法</a></th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.collect">collect</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.columns">columns</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.count">count</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.describe">describe</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.distinct">distinct</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.drop">drop</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.dropDuplicates">dropDuplicates</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.dropna">dropna</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.fillna">fillna</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.foreach">foreach</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.groupBy">groupBy</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.head">head</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.join">join</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.orderBy">orderBy</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.printSchema">printSchema</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.randomSplit">randomSplit</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.select">select</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.show">show</a></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.sort">sort</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.take">take</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.where">where</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.withColumn">withColumn</a></td>
+      <td style="text-align: center"><a href="http://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame.withColumnRenamed">withColumnRenamed</a></td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="sql">SQL</h2>
+
+<p>pyspark同样还支持执行SQL语句去访问SQL数据结构。为了模拟从SQL表中读取数据，将一个DF转成一个临时表来做演示：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">.</span><span class="n">registerTempTable</span><span class="p">(</span><span class="s">'TMP'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>使用<code class="language-plaintext highlighter-rouge">spark.sql()</code>方法来执行SQL语句，注意返回的是DF数据结构。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">spark</span><span class="p">.</span><span class="n">sql</span><span class="p">(</span><span class="s">'SELECT * FROM TMP LIMIT 5'</span><span class="p">).</span><span class="n">show</span><span class="p">()</span>
+<span class="n">spark</span><span class="p">.</span><span class="n">sql</span><span class="p">(</span><span class="s">'SELECT MIN(Rental) FROM TMP'</span><span class="p">).</span><span class="n">show</span><span class="p">()</span>    <span class="c1"># 查找Rental的最小值
+# 查找最小房屋面积对应的样本
+</span><span class="n">spark</span><span class="p">.</span><span class="n">sql</span><span class="p">(</span><span class="s">'SELECT * FROM TMP WHERE RoomArea IN (SELECT MIN(RoomArea) FROM TMP)'</span><span class="p">).</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>值得特别一提的是，在zeppelin环境中，当直接使用sql解释器提取数据时，zeppelin会默认提供一个可视化组件。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>%sql
+SELECT Bedroom,count(1) FROM TMP GROUP BY Bedroom
+</code></pre></div></div>
+
+<p>在可视化组件的<code class="language-plaintext highlighter-rouge">settings</code>中设置好<code class="language-plaintext highlighter-rouge">keys</code>与<code class="language-plaintext highlighter-rouge">values</code>，部分输出如下所示：</p>
+
+<p><img src="/img/2019-04-25_14-30-40.bmp" alt="" /></p>
+
+:ET

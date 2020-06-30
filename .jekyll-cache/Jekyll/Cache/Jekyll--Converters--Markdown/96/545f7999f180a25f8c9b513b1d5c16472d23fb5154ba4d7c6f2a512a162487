@@ -1,0 +1,290 @@
+I"'�<ul id="markdown-toc">
+  <li><a href="#winsock2" id="markdown-toc-winsock2">WinSock2</a></li>
+  <li><a href="#select模型" id="markdown-toc-select模型">select模型</a>    <ul>
+      <li><a href="#server" id="markdown-toc-server">Server</a></li>
+      <li><a href="#client" id="markdown-toc-client">Client</a></li>
+    </ul>
+  </li>
+  <li><a href="#黏包" id="markdown-toc-黏包">黏包</a></li>
+  <li><a href="#缓冲区与阻塞" id="markdown-toc-缓冲区与阻塞">缓冲区与阻塞</a></li>
+</ul>
+
+<h2 id="winsock2">WinSock2</h2>
+
+<p>WinSock2是在Windows下实现socket编程的一个库。一个微软官方的简单C/S示例代码见此：(<a href="https://github.com/Daya-Jin/CPP_Backend/blob/master/Socket/Demo/S.cpp">Server</a>，<a href="https://github.com/Daya-Jin/CPP_Backend/blob/master/Socket/Demo/C.cpp">Client</a>)。可以看出一个最简单的单点C/S架构代码就比较复杂，这是因为官方Demo中加入了各种异常情况的处理。考虑到socket编程最需要关注的点在于收发步骤的逻辑实现，这里给出了一组简化版本的跨平台代码：(<a href="https://github.com/Daya-Jin/CPP_Backend/blob/master/Socket/Demo/S_mini.cpp">Server</a>，<a href="https://github.com/Daya-Jin/CPP_Backend/blob/master/Socket/Demo/C_mini.cpp">Client</a>)。</p>
+
+<p>网络开发主要是围绕connecting、sending和receiving的逻辑来进行代码修改，函数API查询地址<a href="https://docs.microsoft.com/zh-cn/windows/win32/api/_winsock/">见此</a>。</p>
+
+<h2 id="select模型">select模型</h2>
+
+<p>上述示例代码有两个缺陷，一是阻塞模式，二是单点通信。在网络编程中有一种IO复用的select模型，由操作系统实现。其原型为：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">select</span><span class="p">(</span><span class="n">_In_</span> <span class="kt">int</span> <span class="n">nfds</span><span class="p">,</span>    <span class="c1">// 最大fd的ID</span>
+       <span class="n">_Inout_opt_</span> <span class="n">fd_set</span> <span class="n">FAR</span> <span class="o">*</span> <span class="n">readfds</span><span class="p">,</span>    <span class="c1">// 可读fd集合</span>
+       <span class="n">_Inout_opt_</span> <span class="n">fd_set</span> <span class="n">FAR</span> <span class="o">*</span> <span class="n">writefds</span><span class="p">,</span>    <span class="c1">// 可写fd集合</span>
+       <span class="n">_Inout_opt_</span> <span class="n">fd_set</span> <span class="n">FAR</span> <span class="o">*</span> <span class="n">exceptfds</span><span class="p">,</span>    <span class="c1">// 异常fd集合</span>
+       <span class="n">_In_opt_</span> <span class="k">const</span> <span class="k">struct</span> <span class="nc">timeval</span> <span class="n">FAR</span> <span class="o">*</span> <span class="n">timeout</span><span class="p">);</span>    <span class="c1">// 阻塞时间，Linux下会重置</span>
+</code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">fd_set</code>本质是一个长度为1024的位图，对<code class="language-plaintext highlighter-rouge">fd_set</code>的操作依赖如下几个宏：</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">FD_ZERO()</code>：清零某个fd集合；</li>
+  <li><code class="language-plaintext highlighter-rouge">FD_SET()</code>：把一个fd置位；</li>
+  <li><code class="language-plaintext highlighter-rouge">FD_CLR()</code>：把一个fd置零；</li>
+  <li><code class="language-plaintext highlighter-rouge">FD_ISSET()</code>：判断一个fd是否置位。</li>
+</ul>
+
+<p>在程序调用<code class="language-plaintext highlighter-rouge">select</code>函数之后会陷入内核态，<code class="language-plaintext highlighter-rouge">fd_set</code>被完整地复制到内核态中，由内核来监听所有置位的fd，同时程序阻塞，直到超时或者任意fd发生事件。一旦内核检测到有事件发生，内核会修改<code class="language-plaintext highlighter-rouge">fd_set</code>仅保留需要处理的fd。因此在调用<code class="language-plaintext highlighter-rouge">select</code>之后只需要扫描<code class="language-plaintext highlighter-rouge">fd_set</code>中被置位的fd进行处理即可。下面使用select模型实现一个支持多客户端的回显服务器。示例源码<a href="https://github.com/Daya-Jin/CPP_Backend/tree/master/Socket/Demo/select_echo">见此</a>。</p>
+
+<h3 id="server">Server</h3>
+
+<p>首先实现server的回显功能：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">echo</span><span class="p">(</span><span class="n">SOCKET</span> <span class="n">clientSock</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">data</span><span class="p">[</span><span class="n">BUFFER_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">recv</span><span class="p">(</span><span class="n">clientSock</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">BUFFER_SIZE</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">send</span><span class="p">(</span><span class="n">clientSock</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>基于模版代码，在成功监听端口之后使用select模型来处理事务：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 4. Listen on the socket</span>
+<span class="c1">// ...</span>
+
+<span class="kt">char</span> <span class="n">sBuf</span><span class="p">[</span><span class="n">BUFFER_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="s">"hello from server."</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">SOCKET</span><span class="o">&gt;</span> <span class="n">Client_pool</span><span class="p">;</span>    <span class="c1">// 客户端队列，#include&lt;vector&gt;</span>
+
+<span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fd_set</span> <span class="n">fdRead</span><span class="p">;</span>    <span class="c1">// 读fd集合</span>
+    <span class="n">FD_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>    <span class="c1">// 清空集合</span>
+    <span class="n">FD_SET</span><span class="p">(</span><span class="n">listenSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>    <span class="c1">// 监控ListenSocket</span>
+    <span class="n">SOCKET</span> <span class="n">nfds</span> <span class="o">=</span> <span class="n">listenSock</span><span class="p">;</span>    <span class="c1">// 最大fd的值</span>
+
+    <span class="c1">// 将所有客户套接字加入fdRead</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">Client_pool</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">FD_SET</span><span class="p">(</span><span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">nfds</span> <span class="o">&lt;</span> <span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">nfds</span> <span class="o">=</span> <span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 调用select监控所有fd</span>
+    <span class="n">timeval</span> <span class="n">t_val</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span><span class="mi">0</span> <span class="p">};</span>    <span class="c1">// 阻塞时间1.0s</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">nfds</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t_val</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">break</span><span class="p">;</span>    <span class="c1">// error</span>
+
+    <span class="c1">// 处理监听套接字</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">FD_ISSET</span><span class="p">(</span><span class="n">listenSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="c1">// 5. Accept a connection</span>
+        <span class="n">sockaddr_in</span> <span class="n">_cin</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">sockaddr_in</span><span class="p">);</span>
+<span class="cp">#ifdef _WIN32
+</span>        <span class="n">SOCKET</span> <span class="n">clientSock</span> <span class="o">=</span> <span class="n">accept</span><span class="p">(</span><span class="n">listenSock</span><span class="p">,</span> <span class="p">(</span><span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_cin</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">len</span><span class="p">);</span>
+<span class="cp">#else
+</span>        <span class="n">SOCKET</span> <span class="n">clientSock</span> <span class="o">=</span> <span class="n">accept</span><span class="p">(</span><span class="n">listenSock</span><span class="p">,</span> <span class="p">(</span><span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_cin</span><span class="p">,</span> <span class="p">(</span><span class="n">socklen_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">len</span><span class="p">);</span>
+<span class="cp">#endif
+</span>        <span class="k">if</span> <span class="p">(</span><span class="n">INVALID_SOCKET</span> <span class="o">==</span> <span class="n">clientSock</span><span class="p">)</span>
+            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"scoket invalid!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+        <span class="n">Client_pool</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">clientSock</span><span class="p">);</span>
+
+        <span class="n">send</span><span class="p">(</span><span class="n">clientSock</span><span class="p">,</span> <span class="n">sBuf</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">sBuf</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"recv a new client: IP "</span> <span class="o">&lt;&lt;</span> <span class="n">inet_ntoa</span><span class="p">(</span><span class="n">_cin</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+        <span class="n">FD_CLR</span><span class="p">(</span><span class="n">listenSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>    <span class="c1">// 从集合中删除</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 6. Receive and send data</span>
+    <span class="c1">// 处理有事件发生的客户端socket</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">Client_pool</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">FD_ISSET</span><span class="p">(</span><span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">))</span> <span class="p">{</span>
+            <span class="cm">/*判断client是否下线，并删除client的socket*/</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">echo</span><span class="p">(</span><span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">SOCKET</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">Client_pool</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="n">i</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">iter</span> <span class="o">!=</span> <span class="n">Client_pool</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>    <span class="c1">// 客户连接数非空</span>
+                    <span class="n">Client_pool</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">iter</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"idle time..."</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>因为使用了vector数组来维护客户端socket，因此在清理时需要注意：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 7. Disconnect</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">Client_pool</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span>
+<span class="cp">#ifdef _WIN32
+</span>    <span class="n">closesocket</span><span class="p">(</span><span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="cp">#else
+</span>    <span class="n">close</span><span class="p">(</span><span class="n">Client_pool</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="cp">#endif
+</span>
+<span class="cp">#ifdef _WIN32
+</span><span class="n">closesocket</span><span class="p">(</span><span class="n">listenSock</span><span class="p">);</span>
+<span class="n">WSACleanup</span><span class="p">();</span>
+<span class="cp">#else
+</span><span class="n">close</span><span class="p">(</span><span class="n">listenSock</span><span class="p">);</span>
+<span class="cp">#endif
+</span></code></pre></div></div>
+
+<h3 id="client">Client</h3>
+
+<p>同样的，首先实现客户端输入功能与接收回显的功能：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">input</span><span class="p">(</span><span class="n">SOCKET</span> <span class="n">connSock</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">data</span><span class="p">[</span><span class="n">BUFFER_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cin</span><span class="p">.</span><span class="n">getline</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">BUFFER_SIZE</span><span class="p">);</span>
+        <span class="n">send</span><span class="p">(</span><span class="n">connSock</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">handler</span><span class="p">(</span><span class="n">SOCKET</span> <span class="n">connSock</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="n">data</span><span class="p">[</span><span class="n">BUFFER_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">recv</span><span class="p">(</span><span class="n">connSock</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">BUFFER_SIZE</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"recv msg: "</span> <span class="o">&lt;&lt;</span> <span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+    <span class="k">else</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>    <span class="c1">// 服务器丢失</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在成功连接服务器之后，客户端代码需要完成两件事：使用线程来托管输入功能，使用selecct模型来与服务器交互。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 3. Connect to the server</span>
+<span class="c1">// ...</span>
+
+<span class="c1">// 4. Send and receive data</span>
+<span class="kt">char</span> <span class="n">cBuf</span><span class="p">[</span><span class="n">BUFFER_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">recv</span><span class="p">(</span><span class="n">connSock</span><span class="p">,</span> <span class="n">cBuf</span><span class="p">,</span> <span class="n">BUFFER_SIZE</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"recv msg: "</span> <span class="o">&lt;&lt;</span> <span class="n">cBuf</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="nf">t</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">connSock</span><span class="p">);</span>    <span class="c1">// #include &lt;thread&gt;</span>
+<span class="n">t</span><span class="p">.</span><span class="n">detach</span><span class="p">();</span>    <span class="c1">// 守护线程接管输入</span>
+
+<span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fd_set</span> <span class="n">fdRead</span><span class="p">;</span>    <span class="c1">// fd读集合</span>
+    <span class="n">FD_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>    <span class="c1">// 读集合全部复位</span>
+    <span class="n">FD_SET</span><span class="p">(</span><span class="n">connSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>    <span class="c1">// 监听套接字置位</span>
+
+    <span class="n">timeval</span> <span class="n">t_val</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span><span class="mi">0</span> <span class="p">};</span>    <span class="c1">// 阻塞时间1.0s</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">connSock</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t_val</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">break</span><span class="p">;</span>    <span class="c1">// 任务结束</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">FD_ISSET</span><span class="p">(</span><span class="n">connSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">handler</span><span class="p">(</span><span class="n">connSock</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">break</span><span class="p">;</span>    <span class="c1">// 服务器丢失</span>
+
+    <span class="n">FD_CLR</span><span class="p">(</span><span class="n">connSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">fdRead</span><span class="p">);</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"idle time..."</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>需要注意的是select模型仍然属于阻塞模型，其阻塞时间由一个<code class="language-plaintext highlighter-rouge">timeval</code>格式的结构体来决定。select模型的缺陷很明显：</p>
+
+<ul>
+  <li>首先是select能够监控的fd数量是有限的（默认1024）;</li>
+  <li><code class="language-plaintext highlighter-rouge">fd_set</code>类型会完整地从用户态复制到内核态，内核返回时又会完整地复制会用户态；</li>
+  <li>因为每次内核返回都会修改<code class="language-plaintext highlighter-rouge">fd_set</code>，因此该数据无法重用；</li>
+  <li>内核返回信息仅能知道发生了事件，却不知道是哪个fd发生了事件，需要$O(n)$去扫描。</li>
+</ul>
+
+<h2 id="黏包">黏包</h2>
+
+<p>黏包是网络编程中老生常谈的问题了，主要原因就是因为缓冲区的存在，接收到的数据包都是无区分连续的存储在缓冲区中。为了能够精确地从缓冲区中取出一个单独且完整的数据包，必须要有方法能够从缓冲区的连续数据中区分出包与包之间的间隔。</p>
+
+<p>常用的方法是双方协定一个数据格式，每个数据包分为header与body，其中header大小固定而body大小不定，每个数据包的body大小承载在header中，这样一来接收端就可以先接受header，然后再根据header中的信息再接收body。如下代码演示了一个简单的数据包格式：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Header</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="kt">int</span> <span class="n">cmd</span><span class="p">;</span>    <span class="c1">// 控制字段</span>
+    <span class="kt">int</span> <span class="n">length</span><span class="p">;</span>    <span class="c1">// 包体大小</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">DataPack</span> <span class="o">:</span><span class="k">public</span> <span class="n">Header</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="kt">char</span> <span class="n">data</span><span class="p">[</span><span class="mi">2048</span><span class="p">]</span> <span class="o">=</span> <span class="s">"hello from client"</span><span class="p">;</span>
+    <span class="n">DataPack</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">cmd</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">length</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">DataPack</span><span class="p">)</span> <span class="o">-</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<h2 id="缓冲区与阻塞">缓冲区与阻塞</h2>
+
+<p>首先系统的socket自带缓冲区，可称为系统缓冲区。该缓冲区由系统托管，好处就是完全自动化。但是缺点在于很容易阻塞，当CS交互过快并且数据包比较大时，（通常接收端）系统缓冲区很容易被数据填满并得不到及时的清空，就会引发阻塞，这种阻塞即使关闭多余的连接也不会恢复，只能重连。因此为了避免系统缓冲区导致的阻塞，通常会在通信程序中再设立一个单独的程序缓冲区，由程序员管理。因为设立程序缓冲区的目的就是为了不让系统缓冲区阻塞，因此程序缓冲区一般会设的比系统缓冲区大。另一方面，程序缓冲区要尽可能快的将系统缓冲区中的数据搬运到自身，不然就没有存在的意义。</p>
+
+<p>对于客户端而言，只需要设置一个程序缓冲区。程序缓冲区需要自行编写代码维护，首先需要使用一个idx来记录缓冲区中的数据长度，当系统缓冲区存在数据时立马转储进程序缓冲区并更新idx，该行为由select触发；另一方面，当程序缓冲区中的数据大于一个数据头的长度时，读取一个数据头并获取该数据包的长度，然后进入分支：</p>
+
+<ul>
+  <li>
+    <p>若程序缓冲区中数据长度不足，则说明该数据包内容并未完整到达，退出等待下一次调用；</p>
+  </li>
+  <li>
+    <p>若程序缓冲区中数据长度大于该包的完整大小，则完整取出一个数据包，进行响应或处理，然后将程序缓冲区中的数据往前移并更新idx，然后再次判断。</p>
+  </li>
+</ul>
+
+<p>示例代码如下，其中<code class="language-plaintext highlighter-rouge">buffer</code>为程序缓冲区。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">connSock</span><span class="p">,</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="o">+</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">bufIdx</span><span class="p">,</span> <span class="n">RECV_SIZE</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>    <span class="c1">// 服务器丢失</span>
+
+<span class="k">this</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">+=</span> <span class="n">len</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">&gt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">))</span> <span class="p">{</span>    <span class="c1">// 接收数据头</span>
+    <span class="n">DataPack</span> <span class="n">dp</span><span class="p">;</span>
+    <span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dp</span><span class="p">,</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">));</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">+</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">))</span> <span class="p">{</span>    <span class="c1">// datapack</span>
+        <span class="n">memcpy</span><span class="p">(</span><span class="n">dp</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">),</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">);</span>
+
+        <span class="c1">// 缓冲区数据前移</span>
+        <span class="n">memcpy</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">+</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">,</span>
+                <span class="k">this</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">-</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">-</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">);</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">-=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">+</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">;</span>
+
+        <span class="c1">//cout &lt;&lt; "recv msg : " &lt;&lt; dp.data &lt;&lt; endl;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>对于服务端，因为其要接受多个客户端的连接，若仅设置一个程序缓冲区供多客户端发送的话，如何保持数据同步就是一个问题。因此这里使用异步方式，即为每一个连接进来的客户端都专门设置一个程序缓冲区。程序缓冲区的维护同客户端，示例代码如下，其中<code class="language-plaintext highlighter-rouge">clientSock</code>是客户套接字对象，其中封装了网络通信所需的功能。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">sock</span><span class="p">(),</span> <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">+</span> <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">bufIdx</span><span class="p">,</span> <span class="n">RECV_SIZE</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>    <span class="c1">// 客户端丢失</span>
+
+<span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">+=</span> <span class="n">len</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">&gt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">))</span> <span class="p">{</span>    <span class="c1">// 接收数据头</span>
+    <span class="n">DataPack</span> <span class="n">dp</span><span class="p">;</span>
+    <span class="n">memcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dp</span><span class="p">,</span> <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">));</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">+</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">memcpy</span><span class="p">(</span><span class="n">dp</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">),</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">);</span>
+
+        <span class="c1">// 缓冲区数据前移</span>
+        <span class="n">memcpy</span><span class="p">(</span><span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">buffer</span><span class="p">,</span> <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">buffer</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">+</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">,</span>
+                <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">-</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">-</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">);</span>
+        <span class="n">clientSock</span><span class="o">-&gt;</span><span class="n">bufIdx</span> <span class="o">-=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span> <span class="o">+</span> <span class="n">dp</span><span class="p">.</span><span class="n">length</span><span class="p">;</span>
+
+        <span class="c1">//cout &lt;&lt; "recv msg : " &lt;&lt; dp.data &lt;&lt; endl;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">echo</span><span class="p">(</span><span class="n">clientSock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dp</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>设立程序缓冲区的完整代码<a href="https://github.com/Daya-Jin/CPP_Backend/tree/master/Socket/Demo/custom_buffer">见此</a>。需要注意的是，上述代码中使用了<code class="language-plaintext highlighter-rouge">while</code>循环来处理消息，在消息过多时程序会在此处阻塞，但是跟系统缓冲区阻塞不同，此处的阻塞在消息处理完之后会自行消失。以Windows本机为服务器，Ubuntu虚拟机为客户端，单点通信的数据流量如下图所示：</p>
+
+<p><img src="/img/2020-04-26_14-17-05.jpg" alt="" /></p>
+:ET

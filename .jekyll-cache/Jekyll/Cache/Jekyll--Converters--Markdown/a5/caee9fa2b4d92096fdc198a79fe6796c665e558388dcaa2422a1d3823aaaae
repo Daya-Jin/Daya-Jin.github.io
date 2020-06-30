@@ -1,0 +1,91 @@
+I"N<ul id="markdown-toc">
+  <li><a href="#算法概述" id="markdown-toc-算法概述">算法概述</a></li>
+  <li><a href="#expectation-maximization" id="markdown-toc-expectation-maximization">Expectation-Maximization</a></li>
+  <li><a href="#多维数据时的情况" id="markdown-toc-多维数据时的情况">多维数据时的情况</a></li>
+  <li><a href="#训练" id="markdown-toc-训练">训练</a>    <ul>
+      <li><a href="#e-step" id="markdown-toc-e-step">E-step</a></li>
+      <li><a href="#m_step" id="markdown-toc-m_step">M_step</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="算法概述">算法概述</h2>
+
+<p><strong>高斯混合模型</strong>(Gaussian Mixture Models)是一种无监督聚类模型。GMM认为不同类别的特征密度函数是不一样的(实际上也不一样)，GMM为每个类别下的特征分布都假设了一个服从高斯分布的概率密度函数：</p>
+
+\[\begin{aligned}
+    P(x|c_{k})&amp;=\frac{1}{\sqrt{2\pi}\sigma_{k}}exp(-\frac{(x-\mu_{k})^{2}}{2\sigma_{k}^2}) \\
+    P(x|c_{k})&amp;{\sim}N(\mu_{k},\sigma_{k}) \\
+\end{aligned}\]
+
+<p>而数据中又可能是由多个类混合而成，所以数据中特征的概率密度函数可以使用多个高斯分布的组合来表示：</p>
+
+\[\begin{aligned}
+    P(x)&amp;=\sum\limits_{k=1}^{K}P(c_{k})P(x|c_{k}) \\
+        &amp;=\sum\limits_{k=1}^{K}\pi_{k}N(x|\mu_{k},\sigma_{k}) \\
+\end{aligned}\]
+
+<p>其中$\pi_{k}$为类分布概率，也可看做是各高斯分布函数的权重系数，也叫做<strong>混合系数</strong>(mixture coefficient)，其满足$\sum_{k=1}^{K}\pi_{k}=1$。</p>
+
+<h2 id="expectation-maximization">Expectation-Maximization</h2>
+
+<p>模型的形式有了，给定一组数据$X$，我们需要得到一组参数${\mu,\sigma}$，使得在这组参数下观测数据\(X\)出现的概率最大，即最大似然估计。对于数据中的所有样本，其出现的概率(似然函数)为：</p>
+
+\[\prod\limits_{i=1}^{N}P(x_{i})=\prod\limits_{i=1}^{N}\sum\limits_{k=1}^{K}\pi_{k}N(x_{i}|\mu_{k},\sigma_{k})\]
+
+<p>对数似然函数为：</p>
+
+\[\sum\limits_{i=1}^{N}\ln\{\sum\limits_{k=1}^{K}\pi_{k}N(x_{i}|\mu_{k}\sigma_{k})\}\]
+
+<p>假设我们现在有了参数${\mu,\sigma}$，需要计算某个样本对应的类簇，由贝叶斯公式有：</p>
+
+\[\begin{aligned}
+    P(c_{k}|x_{i})&amp;=\frac{P(c_{k},x_{i})}{P(x_{i})} \\
+    &amp;=\frac{P(x_{i}|c_{k})P(c_{k})}{P(x_{i})} \\
+    &amp;=\frac{\pi_{k}N(x_{i}|\mu_{k},\sigma_{k})}{\sum\limits_{k=1}^{K}\pi_{k}N(x_{i}|\mu_{k},\sigma_{k})}
+\end{aligned}\]
+
+<p>可以看出就是一个softmax的形式。同时，有了$P(c_{k}|x_{i})$之后，又可以计算出某个类别的分布概率与该类别下的统计量：</p>
+
+\[\begin{aligned}
+    N_{k}&amp;=\sum\limits_{i=1}^{N}P(c_{k}|x_{i}) \\
+    \pi_{k}&amp;=\frac{N_{k}}{N}=\frac{1}{N}\sum\limits_{i=1}^{N}P(c_{k}|x_{i}) \\
+    \mu_{k}&amp;=\frac{1}{N_{k}}\sum\limits_{i=1}^{N}P(c_{k}|x_{i})x_{i} \\
+    \sigma_{k}&amp;=\sqrt{\frac{1}{N_{k}}\sum\limits_{i=1}^{N}P(c_{k}|x_{i})(x_{i}-\mu_{k})^{2}} \\
+\end{aligned}\]
+
+<p>其中$N_{k}$为类别$k$出现的频率期望。</p>
+
+<p>以上两步计算实质上对应了<strong>期望最大化</strong>(Expectation-Maximization)算法的<strong>E步</strong>(E-step)跟<strong>M步</strong>(M-step)。</p>
+
+<h2 id="多维数据时的情况">多维数据时的情况</h2>
+
+<p>在多维数据下，需要为每个类生成一个多维高斯分布，表示方式与单维情况稍有不同：</p>
+
+\[N(x_{i}|\mu_{k},\Sigma_{k})=\frac{1}{(2\pi)^{n/2}\Sigma_{k}^{1/2}}exp(-\frac{1}{2}(x_{i}-\mu_{k})^{T}\Sigma_{k}^{-1}(x_{i}-\mu_{k}))\]
+
+<h2 id="训练">训练</h2>
+
+<p>有了算法框架，怎么训练模型呢。在初始时随机生成\(K\)个高斯分布，然后不断地迭代EM算法，直至似然函数变化不再明显或者达到了最大迭代次数。</p>
+
+<h3 id="e-step">E-step</h3>
+
+<p>在给定的多维高斯分布下，计算各样本属于各个类别的概率：</p>
+
+\[P(c_{k}|x_{i})=\frac{\pi_{k}P(c_{k}|x_{i})}{\sum\limits_{k=1}^{K}\pi_{k}P(c_{k}|x_{i})}\]
+
+<h3 id="m_step">M_step</h3>
+
+<p>根据概率重新计算更优的高斯参数：</p>
+
+\[\begin{aligned}
+    N_{k}&amp;=\sum\limits_{x=1}^{N}P(c_{k}|x_{i}) \\
+    \pi_{k}&amp;=\frac{N_{k}}{N} \\
+    \mu_{k}&amp;=\frac{1}{N_{k}}\sum\limits_{i=1}^{N}P(c_{k}|x_{i})x_{i} \\
+    \Sigma_{k}&amp;=\frac{1}{N_{k}}\sum\limits_{i=1}^{N}P(c_{k}|x_{i})(x_{i}-\mu_{k})^{T}(x_{i}-\mu_{k}) \\
+\end{aligned}\]
+
+<p><a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/mixture/GaussianMixture.ipynb">实现指导</a></p>
+
+<p><a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/mixture/GaussianMixture.py">完整代码</a></p>
+:ET

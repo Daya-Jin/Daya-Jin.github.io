@@ -1,0 +1,390 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#base" id="markdown-toc-base">Base</a></li>
+  <li><a href="#其他数据类型" id="markdown-toc-其他数据类型">其他数据类型</a></li>
+  <li><a href="#指针与引用" id="markdown-toc-指针与引用">指针与引用</a></li>
+  <li><a href="#类型转换与常量" id="markdown-toc-类型转换与常量">类型转换与常量</a></li>
+  <li><a href="#结构体" id="markdown-toc-结构体">结构体</a></li>
+  <li><a href="#函数" id="markdown-toc-函数">函数</a></li>
+  <li><a href="#类与对象" id="markdown-toc-类与对象">类与对象</a></li>
+  <li><a href="#继承" id="markdown-toc-继承">继承</a></li>
+  <li><a href="#文件io" id="markdown-toc-文件io">文件IO</a></li>
+</ul>
+
+<h2 id="base">Base</h2>
+
+<p>关于标准IO的补充。<code class="language-plaintext highlighter-rouge">cin</code>使用空白来确定结束位置，这意味着<code class="language-plaintext highlighter-rouge">cin</code>每次只能读取单个单位的字串，并且会把空白符留在输入缓冲区。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;    // IO流头文件
+#include &lt;string&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>    <span class="c1">// 标准命名空间</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="cm">/*数据类型*/</span>
+	<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+	<span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="mf">3.14</span><span class="n">f</span><span class="p">;</span>
+	<span class="kt">bool</span> <span class="n">flag</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="sc">'A'</span><span class="p">;</span>    <span class="c1">// 单引号表字符</span>
+	<span class="kt">char</span> <span class="n">chs</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="sc">'a'</span><span class="p">,</span><span class="sc">'b'</span><span class="p">,</span><span class="sc">'c'</span> <span class="p">};</span>    <span class="c1">// 字符数组，会被看作是无结束符的字串</span>
+	<span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="s">"abc"</span><span class="p">;</span>    <span class="c1">// 双引号表字串，隐含'\0'结束符</span>
+	<span class="kt">int</span> <span class="n">arr</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span> <span class="p">};</span>    <span class="c1">// 数组名作用：统计数组长度，获取数组首地址</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">/</span><span class="k">sizeof</span><span class="p">(</span><span class="n">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>    <span class="c1">// 静态数组的长度</span>
+
+	<span class="cm">/* 标准IO */</span>
+	<span class="kt">float</span> <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kt">float</span> <span class="n">pi</span> <span class="o">=</span> <span class="mf">3.14</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"enter the r:"</span><span class="p">;</span>    <span class="c1">// cout: 标准输出</span>
+	<span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">r</span><span class="p">;</span>    <span class="c1">// cin: 标准输入</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">r</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>    <span class="c1">// endl: 插入换行符并刷新缓冲区</span>
+
+	<span class="cm">/*判断*/</span>
+	<span class="k">if</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+		<span class="p">;</span>
+	<span class="k">else</span>
+		<span class="p">;</span>
+
+	<span class="kt">char</span> <span class="n">tmp</span> <span class="o">=</span> <span class="sc">'b'</span><span class="p">;</span>
+	<span class="k">switch</span> <span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+	<span class="p">{</span>
+	<span class="k">case</span> <span class="sc">'a'</span><span class="p">:</span>
+		<span class="k">break</span><span class="p">;</span>
+	<span class="k">case</span> <span class="sc">'b'</span><span class="p">:</span>
+		<span class="k">break</span><span class="p">;</span>
+	<span class="nl">default:</span>
+		<span class="k">break</span><span class="p">;</span>
+	<span class="p">}</span>
+
+	<span class="cm">/*三目运算符*/</span>
+	<span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span> <span class="o">?</span> <span class="sc">'a'</span> <span class="o">:</span> <span class="sc">'b'</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span> <span class="o">?</span> <span class="n">a</span> <span class="o">:</span> <span class="n">b</span><span class="p">)</span> <span class="o">=</span> <span class="mi">9</span><span class="p">;</span>    <span class="c1">// 三目运算符左值时，C++会取地址</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">;</span>
+
+	<span class="cm">/*循环*/</span>
+	<span class="kt">int</span> <span class="n">nums</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="p">};</span>
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="其他数据类型">其他数据类型</h2>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;set&gt;
+#include &lt;unordered_map&gt;
+#include &lt;algorithm&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">string</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">;</span>
+	<span class="n">s1</span> <span class="o">=</span> <span class="s">"prefix"</span><span class="p">;</span>
+	<span class="n">s1</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+	<span class="n">s1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'A'</span><span class="p">;</span>     <span class="c1">// string类支持直接修改</span>
+	<span class="n">getline</span><span class="p">(</span><span class="n">cin</span><span class="p">,</span> <span class="n">s2</span><span class="p">);</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">s1</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>    <span class="c1">// 拼接</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">s1</span> <span class="o">&lt;</span> <span class="n">s2</span><span class="p">);</span>    <span class="c1">// 基于ASCII的比较</span>
+
+	<span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v1</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="p">};</span>
+	<span class="n">v1</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+	<span class="kt">int</span> <span class="n">tmp</span><span class="o">=</span><span class="n">v1</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>    <span class="c1">// 取最后一个元素</span>
+	<span class="n">v1</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>    <span class="c1">// 删除最后一个元素</span>
+	<span class="n">sort</span><span class="p">(</span><span class="n">v1</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v1</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+	<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v1</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">v1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">s</span><span class="p">;</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="n">s</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="n">s</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+	<span class="n">s</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="n">s</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>    <span class="c1">// 存在性判断</span>
+
+	<span class="n">unordered_map</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">m</span><span class="p">;</span>
+	<span class="n">m</span><span class="p">[</span><span class="sc">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="n">m</span><span class="p">[</span><span class="sc">'z'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">26</span><span class="p">;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="sc">'b'</span><span class="p">)</span> <span class="o">!=</span> <span class="n">m</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>    <span class="c1">// 存在性判断</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="指针与引用">指针与引用</h2>
+
+<p>指针指向内存地址，引用相当于别名，有着类似指针的性质。引用必须初始化，且不可更改。实际上引用本质上就是指针常量。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="kt">int</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">;</span>    <span class="c1">// 整形指针p指向整形变量i的地址</span>
+<span class="kt">int</span><span class="o">&amp;</span> <span class="n">r_i</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>    <span class="c1">// 创建i的引用</span>
+<span class="kt">int</span><span class="o">*</span> <span class="k">const</span> <span class="n">r</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">;</span>    <span class="c1">// 引用的本质，指针常量</span>
+<span class="o">*</span><span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// p指向的地址的值+1</span>
+<span class="n">r_i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// 引用+1，即原始数据+1</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">p</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">func</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span><span class="o">&amp;</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+	<span class="c1">// 引用的常见使用场景：使用常量引用实现只读参数</span>
+	<span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// p值+1，即地址偏移一个单位</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">p</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="n">arr</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span> <span class="p">};</span>
+<span class="kt">int</span><span class="o">*</span> <span class="n">ap</span> <span class="o">=</span> <span class="n">arr</span><span class="p">;</span>    <span class="c1">// 数组名即数组首元素的地址</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">arr</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">ap</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="p">(</span><span class="n">ap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="类型转换与常量">类型转换与常量</h2>
+
+<p><code class="language-plaintext highlighter-rouge">*</code>用作指针创建时，指针指向的类型永远在其左侧且是完整类型，如<code class="language-plaintext highlighter-rouge">int*</code>表示指针指向<code class="language-plaintext highlighter-rouge">int</code>型；而<code class="language-plaintext highlighter-rouge">const</code>关键字永远限定其右侧的类型或变量名，如<code class="language-plaintext highlighter-rouge">const int</code>表示常量整形；当两者混用时，记住修饰规则即可，如<code class="language-plaintext highlighter-rouge">const int*</code>表示指向常量整形的指针，<code class="language-plaintext highlighter-rouge">int* const p</code>表示指向<code class="language-plaintext highlighter-rouge">int</code>的指针，且指针<code class="language-plaintext highlighter-rouge">p</code>是常量。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="kt">float</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">;</span>
+<span class="kt">bool</span> <span class="n">t</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+<span class="kt">bool</span> <span class="n">f</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+<span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">==</span> <span class="mf">1.1</span><span class="p">;</span>    <span class="c1">// int-&gt;float自动提升</span>
+<span class="n">b</span> <span class="o">+</span> <span class="n">f</span> <span class="o">==</span> <span class="mf">0.1</span><span class="p">;</span>    <span class="c1">// true=1, flase=0</span>
+
+<span class="k">const</span> <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">const</span> <span class="kt">int</span><span class="o">*</span> <span class="n">p_i</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">m</span><span class="p">;</span>    <span class="c1">// 指向const int的指针</span>
+<span class="n">m</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="o">*</span><span class="n">p_i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// error，常量无法被修改</span>
+<span class="n">p_i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// 指针可以修改</span>
+
+<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="kt">int</span><span class="o">*</span> <span class="k">const</span> <span class="n">p_c</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">;</span>    <span class="c1">// 指向int的指针且p_c为常量</span>
+<span class="n">p_c</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// error，指针常量无法被修改</span>
+<span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="o">*</span><span class="n">p_c</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>     <span class="c1">// 变量可以修改</span>
+
+<span class="k">const</span> <span class="kt">int</span><span class="o">*</span> <span class="k">const</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">m</span><span class="p">;</span>    <span class="c1">// 指向const int的指针且指针p为常量</span>
+<span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="o">*</span><span class="n">p</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>    <span class="c1">// error，常量无法修改，指针常量也无法修改</span>
+</code></pre></div></div>
+
+<h2 id="结构体">结构体</h2>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nc">MyStruct</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+	<span class="kt">float</span> <span class="n">f</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">c</span><span class="p">;</span>
+	<span class="kt">bool</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">MyStruct</span> <span class="n">s</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="sc">'a'</span><span class="p">,</span><span class="nb">true</span> <span class="p">};</span>
+	<span class="n">MyStruct</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">;</span>
+
+	<span class="cm">/*结构体成员的访问方式*/</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">c</span> <span class="o">&lt;&lt;</span> <span class="sc">' '</span> <span class="o">&lt;&lt;</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="c1">// 结构体数据类型对齐</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">i</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\t'</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\t'</span>
+		<span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">c</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\t'</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\t'</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="函数">函数</h2>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">bool</span> <span class="nf">isEven</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">num</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="k">return</span> <span class="n">num</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">plusone</span><span class="p">(</span><span class="kt">int</span><span class="o">*</span> <span class="n">p_num</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="o">*</span><span class="n">p_num</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/*函数重载，同名函数支持不同的输入*/</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">num</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"f_int"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">double</span> <span class="n">num</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"f_double"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/*递归*/</span>
+<span class="kt">int</span> <span class="nf">fact</span><span class="p">(</span><span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>    <span class="c1">// C++支持默认参数</span>
+<span class="p">{</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">num</span><span class="p">;</span>
+	<span class="k">else</span>
+		<span class="k">return</span> <span class="n">num</span> <span class="o">*</span> <span class="n">fact</span><span class="p">(</span><span class="n">num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">isEven</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"is"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="k">else</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"not"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="n">plusone</span><span class="p">(</span><span class="o">&amp;</span><span class="n">num</span><span class="p">);</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">num</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+	<span class="n">f</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="n">f</span><span class="p">(</span><span class="mf">1.0</span><span class="p">);</span>
+
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fact</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="类与对象">类与对象</h2>
+
+<p>访问控制的三种权限：</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">public</code>：公有，外部可访问；</li>
+  <li><code class="language-plaintext highlighter-rouge">protected</code>：保护，外部不可访问，继承可访问；</li>
+  <li><code class="language-plaintext highlighter-rouge">private</code>：私有，外部不可访问，继承不可访问。</li>
+</ul>
+
+<p>下面示例定义一个自定义类<code class="language-plaintext highlighter-rouge">C</code>。</p>
+
+<p>在<code class="language-plaintext highlighter-rouge">C.h</code>里声明类：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">C</span>
+<span class="p">{</span>
+	<span class="k">const</span> <span class="kt">double</span> <span class="n">pi</span><span class="o">=</span><span class="mf">3.14</span><span class="p">;</span>
+	<span class="kt">double</span> <span class="n">r</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="n">C</span><span class="p">(</span><span class="kt">double</span> <span class="n">r</span><span class="p">);</span>    <span class="c1">// 构造函数</span>
+	<span class="n">C</span><span class="p">(</span><span class="k">const</span> <span class="n">C</span><span class="o">&amp;</span> <span class="n">c</span><span class="p">);</span>    <span class="c1">// 拷贝构造函数，复制对象</span>
+	<span class="o">~</span><span class="n">C</span><span class="p">();</span>    <span class="c1">// 析构函数</span>
+	<span class="kt">void</span> <span class="n">setR</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">);</span>
+	<span class="kt">double</span> <span class="n">getS</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+	<span class="n">C</span><span class="o">&amp;</span> <span class="n">plus</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>    <span class="c1">// 半径增加1</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>在<code class="language-plaintext highlighter-rouge">C.cpp</code>里实现类：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include "C.h"
+</span>
+<span class="cm">/*需要用作用域解析符来标识所属的类*/</span>
+<span class="n">C</span><span class="o">::</span><span class="n">C</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">r</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>    <span class="c1">// this指针指向的是对象自身，相当于Python中的self</span>
+<span class="p">}</span>
+
+<span class="n">C</span><span class="o">::</span><span class="n">C</span><span class="p">(</span><span class="k">const</span> <span class="n">C</span><span class="o">&amp;</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">r</span> <span class="o">=</span> <span class="n">c</span><span class="p">.</span><span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">C</span><span class="o">::~</span><span class="n">C</span><span class="p">()</span> <span class="p">{}</span>
+
+<span class="kt">void</span> <span class="n">C</span><span class="o">::</span><span class="n">setR</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">r</span> <span class="o">=</span> <span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">double</span> <span class="n">C</span><span class="o">::</span><span class="n">getS</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">pi</span> <span class="o">*</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">r</span> <span class="o">*</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">r</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/*类方法可以支持链式调用，需要返回自身的引用*/</span>
+<span class="n">C</span><span class="o">&amp;</span> <span class="n">C</span><span class="o">::</span><span class="n">plus</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">this</span><span class="o">-&gt;</span><span class="n">r</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>主程序<code class="language-plaintext highlighter-rouge">main.cpp</code>：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include "C.h"
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">C</span> <span class="n">c0</span> <span class="o">=</span> <span class="n">C</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	<span class="n">C</span> <span class="n">c1</span> <span class="o">=</span> <span class="n">C</span><span class="p">(</span><span class="n">c0</span><span class="p">);</span>
+	<span class="n">c1</span><span class="p">.</span><span class="n">setR</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">c1</span><span class="p">.</span><span class="n">getS</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">c1</span><span class="p">.</span><span class="n">plus</span><span class="p">().</span><span class="n">plus</span><span class="p">();</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">c1</span><span class="p">.</span><span class="n">getS</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>C++中类与结构体是相似类型，唯一区别在于struct默认public权限而class默认private权限。C++中保留结构体的设计仅仅是为了兼容C语言。</p>
+
+<h2 id="继承">继承</h2>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include&lt;string&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">BasePage</span> <span class="p">{</span>
+<span class="nl">protected:</span>
+	<span class="n">string</span> <span class="n">header</span> <span class="o">=</span> <span class="s">"HTML Header"</span><span class="p">;</span>
+	<span class="n">string</span> <span class="n">footer</span> <span class="o">=</span> <span class="s">"HTML Footer"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">show</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">header</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> 
+			<span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">footer</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">DetailPage</span> <span class="o">:</span><span class="k">public</span> <span class="n">BasePage</span> <span class="p">{</span>
+	<span class="n">string</span> <span class="n">info</span> <span class="o">=</span> <span class="s">"Detail Info"</span><span class="p">;</span>
+
+<span class="nl">public:</span>
+	<span class="kt">void</span> <span class="n">show</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>    <span class="c1">// 子类会重写父类的同名函数</span>
+		<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">header</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span>
+			<span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">info</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span>
+			<span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">footer</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">DetailPage</span> <span class="n">p1</span><span class="p">;</span>
+	<span class="n">p1</span><span class="p">.</span><span class="n">show</span><span class="p">();</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="文件io">文件IO</h2>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include&lt;iostream&gt;
+#include&lt;fstream&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">fstream</span> <span class="n">fd_w</span><span class="p">(</span><span class="s">"tmp.txt"</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">out</span> <span class="o">|</span> <span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">fd_w</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span> <span class="p">{</span>
+		<span class="kt">char</span> <span class="n">info</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"hello</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+		<span class="n">fd_w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">info</span><span class="p">));</span>
+	<span class="p">}</span>
+	<span class="n">fd_w</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+	<span class="n">fstream</span> <span class="n">fd_r</span><span class="p">(</span><span class="s">"tmp.txt"</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">in</span> <span class="o">|</span> <span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span>
+	<span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">512</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span> <span class="p">};</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">fd_r</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span> <span class="p">{</span>
+		<span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">fd_r</span><span class="p">.</span><span class="n">eof</span><span class="p">())</span> <span class="p">{</span>
+			<span class="n">fd_r</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="mi">512</span><span class="p">);</span>
+			<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">buf</span><span class="p">;</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="n">fd_r</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

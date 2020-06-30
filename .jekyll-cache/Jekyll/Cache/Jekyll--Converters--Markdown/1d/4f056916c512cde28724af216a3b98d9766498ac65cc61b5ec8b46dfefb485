@@ -1,0 +1,108 @@
+I"k4<ul id="markdown-toc">
+  <li><a href="#icmp" id="markdown-toc-icmp">ICMP</a></li>
+  <li><a href="#ping" id="markdown-toc-ping">Ping</a></li>
+</ul>
+
+<h2 id="icmp">ICMP</h2>
+
+<p><strong>网际控制协议</strong>(Internet Control Message Protocol)运行在IP之上，属于TCP/IP协议簇的核心协议之一。其在网络中为数不多的直接使用场景就有ping命令。</p>
+
+<p>ICMP报文头的形式如下图所示，共8Byte。在使用ping命令时，Type值固定为$08$，Code值固定为$00$，Checksum在由发送方计算并填充，ID与Sequence则不固定。</p>
+
+<p><img src="/img/2019-11-22_21-54-05.jpg" alt="" /></p>
+
+<p>需要注意的是ICMP的校验和是根据整个ICMP报文来计算的，发送方的计算过程如下所示：</p>
+
+<ol>
+  <li>将Checksum字段置零，然后将整个首部按$16$bit为单位分组进行累加，若中间结果超出$16$bit(类似于进位)，则截取高位再加到低位上去；</li>
+  <li>对累加和取反码，即为Checksum。</li>
+</ol>
+
+<p>而接收方的校验则更简单，直接将ICMP报文按$16$bit分组，累计求和并取反，结果为$0$则确认，否则失败。</p>
+
+<p><img src="/img/2019-11-22_22-28-33.jpg" alt="" /></p>
+
+<p>上图是在Windows平台下ping某网站时的wireshark抓包，其中高亮部分为ICMP报文，易得ICMP的头部(前$8$Byte)值为：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>08 00 4c 60 00 01 00 fb
+</code></pre></div></div>
+
+<p>后面的值为报文装载数据，可以看出是从a到i的顺序字母串。下面以此为例，使用Python实现ICMP的校验和计算。</p>
+
+<p>首先是报文的构建，这里以发送方为例。根据wireshark抓包，易得首部的所有字段情况，其中Checksum字段需要置零：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">type</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># Type: '\x08'(ICMP Echo Request)
+</span><span class="n">code</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Code: '\x00'
+</span><span class="n">checksum</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Checksum
+</span><span class="nb">id</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># ID: '\x00\x01'
+</span><span class="n">seq</span> <span class="o">=</span> <span class="mi">251</span>  <span class="c1"># Sequence: '\x00\xfb'
+</span><span class="n">body</span> <span class="o">=</span> <span class="s">b"abcdefghijklmnopqrstuvwabcdefghi"</span>  <span class="c1"># Data
+</span><span class="n">icmp_msg</span> <span class="o">=</span> <span class="n">struct</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="s">'!BBHHH32s'</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>然后就是分组、累加，因为此处报文是根据网络字节序拼接形成的，所以在做分组加法时，后面的值为高位，前面的值为低位：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">icmp_msg</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>  <span class="c1"># 16bit一组
+</span>    <span class="n">group_val</span> <span class="o">=</span> <span class="n">icmp_msg</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">icmp_msg</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>  <span class="c1"># 16bit的值，注意字节顺序
+</span>    <span class="n">acc</span> <span class="o">+=</span> <span class="n">group_val</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">acc</span> <span class="o">&amp;</span> <span class="mh">0xffff</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">acc</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>最后一步是取反，还要将字节序转换成网络字节序，最后得到的网络字节序校验和<code class="language-plaintext highlighter-rouge">n</code>应该和上图抓包中的保持一致：$\x4c60$，即十进制的$19552$：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">h</span> <span class="o">=</span> <span class="o">~</span><span class="n">acc</span> <span class="o">&amp;</span> <span class="mh">0xffff</span>  <span class="c1"># host byte order(取反并截取低16位)
+</span><span class="n">n</span> <span class="o">=</span> <span class="n">h</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span> <span class="o">|</span> <span class="p">(</span><span class="n">h</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span> <span class="o">&amp;</span> <span class="mh">0xff00</span><span class="p">)</span>  <span class="c1"># network byte order(高8位低8位互换)
+</span><span class="k">assert</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">19552</span>  <span class="c1"># '\x4c60'
+</span></code></pre></div></div>
+
+<p>封装的ICMP校验和代码<a href="https://github.com/Daya-Jin/As_a_Programmer/blob/master/Python/ICMP_checksum.py">见此</a>。</p>
+
+<h2 id="ping">Ping</h2>
+
+<p>有了ICMP的校验和程序后，要实现一个ping程序就不难了。</p>
+
+<p>首先是创建套接字，原始套接字才支持ICMP协议：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="n">addr_d</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>    <span class="c1"># destination
+</span><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span>
+                    <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_RAW</span><span class="p">,</span>
+                    <span class="n">socket</span><span class="p">.</span><span class="n">getprotobyname</span><span class="p">(</span><span class="s">"icmp"</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>使用<code class="language-plaintext highlighter-rouge">struct</code>模块来构建ICMP报文：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">build_icmpmsg</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">icmp_msg</span> <span class="o">=</span> <span class="n">struct</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="s">'!BBHHH32s'</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">checksum</span> <span class="o">=</span> <span class="n">get_checksum</span><span class="p">(</span><span class="n">icmp_msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">struct</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="s">'!BBHHH32s'</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="n">icmp_msg</span> <span class="o">=</span> <span class="n">build_icmpmsg</span><span class="p">(</span><span class="n">TYPE</span><span class="p">,</span> <span class="n">CODE</span><span class="p">,</span> <span class="n">CHECKSUM</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="n">SEQ</span><span class="p">,</span> <span class="n">DATA</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>发送报文然后等待响应。需要注意的是，程序接收到的是网络层的报文，即IP报文。ICMP首部在IP报文中位于第$21-28$字节：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">time</span><span class="p">,</span> <span class="n">select</span>
+
+<span class="n">sock</span><span class="p">.</span><span class="n">sendto</span><span class="p">(</span><span class="n">icmp_msg</span><span class="p">,</span> <span class="p">(</span><span class="n">addr_d</span><span class="p">,</span> <span class="mi">80</span><span class="p">))</span>
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">readable</span> <span class="o">=</span> <span class="n">select</span><span class="p">.</span><span class="n">select</span><span class="p">([</span><span class="n">sock</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">TIME_OUT</span><span class="p">)</span>
+    <span class="n">res_t</span> <span class="o">=</span> <span class="n">time</span><span class="p">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_t</span>
+    <span class="k">if</span> <span class="n">readable</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="p">[]</span> <span class="ow">or</span> <span class="n">res_t</span> <span class="o">&gt;=</span> <span class="n">TIME_OUT</span><span class="p">:</span>  <span class="c1"># 超时
+</span>        <span class="k">break</span>
+
+    <span class="n">receive_msg</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="n">sock</span><span class="p">.</span><span class="n">recvfrom</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="n">icmp_header</span> <span class="o">=</span> <span class="n">receive_msg</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">28</span><span class="p">]</span>  <span class="c1"># ICMP首部
+</span>    <span class="nb">type</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">seq</span> <span class="o">=</span> <span class="n">struct</span><span class="p">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">'!BBHHH'</span><span class="p">,</span> <span class="n">icmp_header</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">seq</span> <span class="o">==</span> <span class="n">SEQ</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">"来自 {} 的回复: 字节=32"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">break</span>
+</code></pre></div></div>
+
+<p>Windows版的复刻ping程序<a href="https://github.com/Daya-Jin/As_a_Programmer/blob/master/Python/ping.py">见此</a>。</p>
+:ET

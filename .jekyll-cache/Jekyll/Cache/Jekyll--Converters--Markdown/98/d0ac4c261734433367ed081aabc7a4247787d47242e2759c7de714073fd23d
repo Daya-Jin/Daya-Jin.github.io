@@ -1,0 +1,75 @@
+I"�#<ul id="markdown-toc">
+  <li><a href="#basic" id="markdown-toc-basic">Basic</a></li>
+  <li><a href="#黏包" id="markdown-toc-黏包">黏包</a></li>
+  <li><a href="#struct" id="markdown-toc-struct">Struct</a></li>
+</ul>
+
+<h2 id="basic">Basic</h2>
+
+<p>一个简单的TCP回显服务器与客户端程序。</p>
+
+<p> <code class="language-plaintext highlighter-rouge">server.py</code>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="n">HOST</span> <span class="o">=</span> <span class="n">socket</span><span class="p">.</span><span class="n">gethostname</span><span class="p">()</span>
+<span class="n">PORT</span> <span class="o">=</span> <span class="mi">50007</span>
+
+<span class="k">with</span> <span class="n">socket</span><span class="p">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+    <span class="n">s</span><span class="p">.</span><span class="n">bind</span><span class="p">((</span><span class="n">HOST</span><span class="p">,</span> <span class="n">PORT</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># 积压连接数
+</span>    <span class="n">conn</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">accept</span><span class="p">()</span>    <span class="c1"># 返回新sock对象与连接地址
+</span>    <span class="k">with</span> <span class="n">conn</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'Connected by'</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">conn</span><span class="p">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">conn</span><span class="p">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>    <span class="c1"># 发送所有数据
+</span></code></pre></div></div>
+
+<p> <code class="language-plaintext highlighter-rouge">client.py</code>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="n">HOST</span> <span class="o">=</span> <span class="s">'192.168.10.128'</span>  <span class="c1"># The remote host
+</span><span class="n">PORT</span> <span class="o">=</span> <span class="mi">50007</span>  <span class="c1"># The same port as used by the server
+</span><span class="k">with</span> <span class="n">socket</span><span class="p">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+    <span class="n">s</span><span class="p">.</span><span class="n">connect</span><span class="p">((</span><span class="n">HOST</span><span class="p">,</span> <span class="n">PORT</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">b'Hello, world'</span><span class="p">)</span>    <span class="c1"># 发送所有数据(字节流)
+</span>    <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>    <span class="c1"># 字节流
+</span>    <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Received'</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>    <span class="c1"># 字节流转字串
+</span></code></pre></div></div>
+
+<h2 id="黏包">黏包</h2>
+
+<p>因为TCP是面向连接的协议，数据流是以packet的形式发送与接收的，如果发送消息过长会被分成多个包，同样接收方也会分多次接收。问题的根源在于，接收方不知道发送方要发送多长的数据，若发送方连续连续发送两条数据，接收方不知道数据之间的分割，因此将两条本应分开数据(的某部分)一起接收了，于是产生了黏包现象。UDP没有黏包问题。</p>
+
+<p>黏包问题的解决方式也很简单，既然问题的根源在于接收方不知道发送数据的长度，那么在发送正式数据前发送方通知接收方的数据长度即可。</p>
+
+<h2 id="struct">Struct</h2>
+
+<p>Python的<code class="language-plaintext highlighter-rouge">struct</code>模块是一个字节流解释器跟翻译器，一个最简单的示例，现有三个数1、2、3，如果要将其分别按不同的类型转成(翻译)字节流，可以使用下述代码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">struct</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="s">'ihb'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>    <span class="c1"># b'\x01\x00\x00\x00\x02\x00\x03'
+</span><span class="k">print</span><span class="p">(</span><span class="n">struct</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="s">'!ihb'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>    <span class="c1"># b'\x00\x00\x00\x01\x00\x02\x03'
+</span></code></pre></div></div>
+
+<p>这里解释一下程序与输出。<code class="language-plaintext highlighter-rouge">pack</code>的第一个参数是格式字串，其后跟的全是需要转换的数据，格式参数必须跟数据一一对应。上述程序中的<code class="language-plaintext highlighter-rouge">!</code>表示网络字节序，<code class="language-plaintext highlighter-rouge">i</code>表示int(4Byte)，<code class="language-plaintext highlighter-rouge">h</code>表示short(2Byte),<code class="language-plaintext highlighter-rouge">b</code>表示signed char(1Byte)。根据<code class="language-plaintext highlighter-rouge">ihb</code>的解释格式，1、2、3会被分别转换成：<code class="language-plaintext highlighter-rouge">0x00000001</code>、<code class="language-plaintext highlighter-rouge">0x0002</code>和<code class="language-plaintext highlighter-rouge">0x03</code>，然后按照不同的字节序会得到不同的字节流。</p>
+
+<p>又比如，在ping程序的ICMP报文中，前$8$个字节即为ICMP的头部，如下图所示，ICMP的头部字节码为：<code class="language-plaintext highlighter-rouge">\x08\x00\x4c\x60\x00\x01\x00\xfb</code>。</p>
+
+<p><img src="/img/2019-11-22_22-28-33.jpg" alt="" /></p>
+
+<p>这里对ICMP的首部进行解码，由人工计算易得首部各字段的值应该为<code class="language-plaintext highlighter-rouge">(8, 0, 19552, 1, 251)</code>，由<code class="language-plaintext highlighter-rouge">struct</code>模块解码得到的值与之一致：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="s">b'</span><span class="se">\x08\x00\x4c\x60\x00\x01\x00\xfb</span><span class="s">'</span>
+<span class="k">print</span><span class="p">(</span><span class="n">struct</span><span class="p">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">'!BBHHH'</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>    <span class="c1"># (8, 0, 19552, 1, 251)
+</span></code></pre></div></div>
+
+:ET

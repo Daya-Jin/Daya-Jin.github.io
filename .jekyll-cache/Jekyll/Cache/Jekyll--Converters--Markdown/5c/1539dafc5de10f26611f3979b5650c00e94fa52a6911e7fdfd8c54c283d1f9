@@ -1,0 +1,15 @@
+I"�
+<p><a href="https://www.hackerrank.com/challenges/revising-the-select-query/problem">Revising the Select Query I</a>。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="o">*</span> 
+<span class="k">from</span> <span class="n">CITY</span>
+<span class="k">where</span> <span class="n">COUNTRYCODE</span><span class="o">=</span><span class="s1">'USA'</span> <span class="k">and</span> <span class="n">POPULATION</span><span class="o">&gt;</span><span class="mi">100000</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><a href="https://www.hackerrank.com/challenges/revising-the-select-query-2/problem">Revising the Select Query II</a>。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="n">NAME</span>
+<span class="k">from</span> <span class="n">CITY</span>
+<span class="k">where</span> <span class="n">COUNTRYCODE</span><span class="o">=</span><span class="s1">'USA'</span> <span class="k">and</span> <span class="n">POPULATION</span><span class="o">&gt;</span><span class="mi">120000</span><span class="p">;</span>
+</code></pre></div></div>
+:ET

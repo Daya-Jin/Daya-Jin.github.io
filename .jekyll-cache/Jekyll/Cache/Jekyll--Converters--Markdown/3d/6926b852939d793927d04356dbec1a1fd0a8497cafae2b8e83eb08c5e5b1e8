@@ -1,0 +1,81 @@
+I"$
+<p>模式图：</p>
+
+<p><img src="/img/2019-09-05_15-02-05.bmp" alt="" /></p>
+
+<p>a. 找出Comp. Sci. 系开设的具有3个学分的课程。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="n">title</span>
+<span class="k">from</span> <span class="n">course</span>
+<span class="k">where</span> <span class="n">dept_name</span><span class="o">=</span><span class="s1">'Comp. Sci.'</span> <span class="k">and</span> <span class="n">credits</span><span class="o">=</span><span class="mi">3</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>b. 
+该查询涉及到多个表，并且在合并结果时有两种不同的ID属性，在合并时注意顺序。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="k">distinct</span> <span class="n">student</span><span class="p">.</span><span class="n">name</span>
+<span class="k">from</span> <span class="n">instructor</span> <span class="k">join</span> <span class="n">teaches</span> <span class="k">using</span> <span class="p">(</span><span class="n">ID</span><span class="p">)</span>
+<span class="k">join</span> <span class="p">(</span><span class="n">student</span> <span class="k">join</span> <span class="n">takes</span> <span class="k">using</span> <span class="p">(</span><span class="n">ID</span><span class="p">))</span> <span class="k">using</span> <span class="p">(</span><span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">,</span><span class="n">semester</span><span class="p">,</span><span class="nb">year</span><span class="p">)</span>
+<span class="k">where</span> <span class="n">instructor</span><span class="p">.</span><span class="n">name</span><span class="o">=</span><span class="s1">'Einstein'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>c. 找出教师的最高工资。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span> <span class="k">from</span> <span class="n">instructor</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>d. 找出工资最高的所有教师。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="n">name</span>
+<span class="k">from</span> <span class="n">instructor</span>
+<span class="k">where</span> <span class="n">salary</span><span class="o">=</span><span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">salary</span><span class="p">)</span> <span class="k">from</span> <span class="n">instructor</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>e. 找出09年秋季开设的每个课程段的选课人数。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span>
+<span class="k">from</span> <span class="nv">`section`</span> <span class="k">join</span> <span class="n">takes</span> <span class="k">using</span> <span class="p">(</span><span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">,</span><span class="n">semester</span><span class="p">,</span><span class="nb">year</span><span class="p">)</span>
+<span class="k">where</span> <span class="nb">year</span><span class="o">=</span><span class="mi">2009</span> <span class="k">and</span> <span class="n">semester</span><span class="o">=</span><span class="s1">'Fall'</span>
+<span class="k">group</span> <span class="k">by</span> <span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>f. 从09年秋季找出最多的选课人数。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">enrollment</span><span class="p">)</span>
+<span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="k">count</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span> <span class="k">as</span> <span class="n">enrollment</span>
+	<span class="k">from</span> <span class="n">takes</span> <span class="k">join</span> <span class="nv">`section`</span> <span class="k">using</span> <span class="p">(</span><span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">,</span><span class="n">semester</span><span class="p">,</span><span class="nb">year</span><span class="p">)</span>
+	<span class="k">where</span> <span class="nv">`year`</span><span class="o">=</span><span class="mi">2009</span> <span class="k">and</span> <span class="n">semester</span><span class="o">=</span><span class="s1">'Fall'</span>
+	<span class="k">group</span> <span class="k">by</span> <span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>g. 从09年秋季找出选课人数最多的课程。</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">tmp</span> <span class="k">as</span> 
+<span class="p">(</span><span class="k">select</span> <span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">,</span><span class="k">count</span><span class="p">(</span><span class="n">ID</span><span class="p">)</span> <span class="k">as</span> <span class="n">enrollment</span>
+<span class="k">from</span> <span class="n">takes</span>
+<span class="k">where</span> <span class="n">semester</span><span class="o">=</span><span class="s1">'Fall'</span> <span class="k">and</span> <span class="nv">`year`</span><span class="o">=</span><span class="mi">2009</span>
+<span class="k">group</span> <span class="k">by</span> <span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span><span class="p">)</span>
+<span class="k">select</span> <span class="n">course_id</span><span class="p">,</span><span class="n">sec_id</span>
+<span class="k">from</span> <span class="n">tmp</span>
+<span class="k">where</span> <span class="n">enrollment</span><span class="o">=</span><span class="p">(</span><span class="k">select</span> <span class="k">max</span><span class="p">(</span><span class="n">enrollment</span><span class="p">)</span> <span class="k">from</span> <span class="n">tmp</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>3.3</p>
+
+<p>a.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">update</span> <span class="n">instructor</span>
+<span class="k">set</span> <span class="n">salary</span><span class="o">=</span><span class="n">salary</span><span class="o">*</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span>
+<span class="k">where</span> <span class="n">dept_name</span><span class="o">=</span><span class="s1">'Comp. Sci.'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>b.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+</code></pre></div></div>
+
+<p>c.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+</code></pre></div></div>
+:ET

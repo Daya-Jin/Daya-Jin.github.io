@@ -1,0 +1,33 @@
+I"<ul id="markdown-toc">
+  <li><a href="#概述" id="markdown-toc-概述">概述</a></li>
+</ul>
+
+<h1 id="概述">概述</h1>
+
+<p>TFIDF全称为<strong>词频-逆文档频率</strong>(Term Frequency-Inverse Document Frequency)，最早用于搜索引擎中的匹配打分，在比赛中也可用来提取特征。</p>
+
+<p><strong>TF</strong>(Term Frequency)指的是单词在当前文档中出现的频数：</p>
+
+\[tf(t,d)=n_{t,d}\]
+
+<p>其中$t$表示某个单词term，$d$表示当前文档document，$n$表示出现次数。不难看出若某个文档特别长，那么每个单词的TF都会变大，为了消除这种影响，将TF归一化，除以文档总词数：</p>
+
+\[tf(t,d)=\frac{n_{t,d}}{\sum_{t'\in{d}}n_{t',d}}\]
+
+<p>TF表征了文档中各单词的归一化频率，该值越大，说明单词在文档中的占比越大。</p>
+
+<p><strong>IDF</strong>(Inverse Document Frequency)指的是包含某个词的文档数所占总文档数的比例倒数：</p>
+
+\[df(t,D)=d_{t} \\
+idf(t,D)=\frac{N_{d}}{df(t,D)} \\\]
+
+<p>其中$D$表示整个文档集，$df(t,D)$表示某一单词的文档频数(document frequency)，即包含某一单词的文档数量；$N_{d}$表示文档总数。为了避免除零，对分母$+1$，且为了避免$idf$值过大，取对数：</p>
+
+\[idf(t,D)=\log\frac{N_{D}}{df(t,D)+1}\]
+
+<p>可以看出DF值表征了单词在所有文档库中的常见程度，如果一个单词要能体现出文档的特征，那么应该同时满足TF值大与DF值小，即在某一文档中经常出现，但是在其他文档中不常出现。将DF值取倒数，那么得到TF-IDF权重的计算方式：</p>
+
+\[tfidf(t,d,D)=tf(t,d)\times{idf(t,D)}\]
+
+<p>简单实现<a href="https://github.com/Daya-Jin/ML_for_learner/blob/master/feature_extraction/text.py#L48">见此</a>。</p>
+:ET

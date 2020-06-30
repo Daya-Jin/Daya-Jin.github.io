@@ -1,0 +1,94 @@
+I"I<ul id="markdown-toc">
+  <li><a href="#financial-market" id="markdown-toc-financial-market">Financial Market</a>    <ul>
+      <li><a href="#primary-market-and-secondary-market" id="markdown-toc-primary-market-and-secondary-market">Primary Market and Secondary Market</a></li>
+    </ul>
+  </li>
+  <li><a href="#financial-intermediary" id="markdown-toc-financial-intermediary">Financial Intermediary</a></li>
+  <li><a href="#saving-and-investment" id="markdown-toc-saving-and-investment">Saving and Investment</a></li>
+  <li><a href="#the-market-for-loanable-funds" id="markdown-toc-the-market-for-loanable-funds">The Market for Loanable Funds</a></li>
+  <li><a href="#basic-tools" id="markdown-toc-basic-tools">Basic Tools</a>    <ul>
+      <li><a href="#present-value" id="markdown-toc-present-value">Present Value</a></li>
+      <li><a href="#managing-risk" id="markdown-toc-managing-risk">Managing Risk</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>金融系统</strong>(financial system)将有限的经济资源从储蓄方转移到借贷方。储户把他们的钱投进金融系统希望在未来得到额外的利息回报，而借贷方需要金融系统中的钱来进行投资，但是需要支付利息。金融机构分为两大类：<strong>金融市场</strong>(financial market)与<strong>金融中介</strong>(financial intermediary)。</p>
+
+<h2 id="financial-market">Financial Market</h2>
+
+<p>在金融市场中，存方的资金能直接提供给借方，最主要的就是<strong>债券市场</strong>(bond market)与<strong>股市</strong>(stock market)。</p>
+
+<p><strong>Bond Market</strong></p>
+
+<p><strong>债券</strong>(bond)属于<strong>债务</strong>(debt)，是借方给存方的一种债务证明。债券有<strong>期</strong>(term)的属性，偿还债务的时间称为<strong>到期日</strong>(date of maturity)，该时间有长有短。另一个属性是<strong>信用风险</strong>(credit risk)，即借方有可能<strong>违约</strong>(default)。第三个属性是<strong>税收待遇</strong>，即税法如何对待债券的收益。</p>
+
+<p><strong>Stock Market</strong></p>
+
+<p><strong>股权</strong>(stock)代表对一家企业的拥有权，属于<strong>权益</strong>(equity)，意味着股东拥有企业的一部分利润。股份可以自由买卖。</p>
+
+<p>通过出售股份来集资的方式称作<strong>股权融资</strong>(equity finance)，通过出售债券集资的方式称为<strong>债务融资</strong>(debt finance)。相比于债券，持股者可以享受公司利润带来的红利，同时也要承担公司亏损的风险。</p>
+
+<p>因为股份可以自由买卖，所以股份形成了一个供需市场。股票的价格代表了人们对于该企业的期望，当人们看好该企业时，股价会上涨，反之会下降。<strong>股票指数</strong>(stock index)由一组股票计算得到的平均股价。</p>
+
+<p>相比于债务，持有权益的缺点就是权益持有人是<strong>剩余索取者</strong>(residual claimant)，即企业必须优先还完债务；而优点就在于权益持有人能从企业的收益中获利。</p>
+
+<h3 id="primary-market-and-secondary-market">Primary Market and Secondary Market</h3>
+
+<p><strong>一级市场</strong>(primary market)指新发行证券的市场，普通民众一般接触不到，因为大都是投资银行的闭门交易。<strong>二级市场</strong>(secondary market)是指证券再交易的市场，最著名的例子就是纽交所与纳斯达克。二级市场有两个主要的作用，一是更快更简单地将证券售卖出去以筹集资金，二是二级市场能决定证券在一级市场的价格。</p>
+
+<h2 id="financial-intermediary">Financial Intermediary</h2>
+
+<p>在金融中介机构中，存方的资金不直接流向借方，而是通过中介。典型的有<strong>银行</strong>(bank)和<strong>互助基金</strong>(mutual fund)。</p>
+
+<p><strong>Bank</strong></p>
+
+<p>银行自不必多说，银行作为可信第三方，任何存方都可以往银行里存钱而享受利息，任何借方都可以找银行贷款而支付利息。银行的另一个好处是创造了<strong>交换媒介</strong>(medium of exchage)，如支票和信用卡等。</p>
+
+<p><strong>Mutual Funds</strong></p>
+
+<p>互助基金则是通过出售股份来获得资金，然后把资金用于购买股票和债券的机构。互助基金的优势之一在于它能让那些钱不多的人也能分散资产，而另一优势在于它能让普通人也能享受到专业的财务管理服务，当然是需要支付手续费的。</p>
+
+<h2 id="saving-and-investment">Saving and Investment</h2>
+
+<p>现假设一个封闭经济体，易得：</p>
+
+\[Y=C+I+G \\
+I=Y-C-G \\\]
+
+<p>易得$Y-C-G$为经济体中总收入减去消费$C$与政府支出$G$，即国民储蓄$S$。由上式有：</p>
+
+\[I=S\]
+
+<p>上式表明，对一整个经济体来说，储蓄与投资是等额的。令$T$等于政府税收减去转移支付，即政府税收净收入，上式还可变化为：</p>
+
+\[S=(Y-T-C)+(T-G)\]
+
+<p>可看到国民储蓄可分为两部分，前一部分为<strong>私人储蓄</strong>，家庭在缴税与消费之后的剩余；后一部分为<strong>公营储蓄</strong>，政府税收减去政府支出之后的剩余。若$T&gt;G$，则政府出现<strong>财政盈余</strong>，反之会出现<strong>财政赤字</strong>。</p>
+
+<h2 id="the-market-for-loanable-funds">The Market for Loanable Funds</h2>
+
+<p>金融系统的实质就是资金的流动，那么就可以看做是资金的市场，称为<strong>借贷资金市场</strong>(market for loanable funds)，所有存方在该市场存放他们的存款，所有借方在该市场借贷他们的资金，该市场同样受供需定律的影响。</p>
+
+<p>储蓄是该市场的供给，而借贷是该市场的需求，影响供需量的因素就是利率。</p>
+
+<p><img src="/img/2019-11-20_20-50-32.jpg" alt="" /></p>
+
+<p>之前说过，储蓄可以加快资本积累，提高未来国民生活质量。</p>
+
+<p>(待补充)</p>
+
+<h2 id="basic-tools">Basic Tools</h2>
+
+<h3 id="present-value">Present Value</h3>
+
+<p>大家都应该有一常识：今天的钱比未来等额的钱要更值钱。<strong>现值</strong>(present value)指在当前利率下，要在未来产生指定金额所需要的当前金额。</p>
+
+<h3 id="managing-risk">Managing Risk</h3>
+
+<p>人都倾向于规避风险，比如说一个公平对赌协议，投一次硬币，正面赢1000，反面输1000，大部分人还是会选择不赌。因为对一个规避风险的人来说，输掉1000的痛苦要超过赢得1000的快乐。经济学家使用<strong>效用</strong>(utility)来描述人们主观上的满足感，但是效用同样存在边际递减效应，所以失去同样数量金钱的效用损失要大于得到同样金钱的效用。<strong>保险</strong>就是风险规避下的产物，保险的作用并不仅是降低风险，而且还很有效的进行了风险分散。</p>
+
+<p>但是保险市场同样存在两个问题，一是逆向选择，风险更高的人群会更倾向于购买保险；二是道德风险，人们购买保险后，就会不那么注意自己的风险行为。</p>
+
+<p>待补充</p>
+:ET
