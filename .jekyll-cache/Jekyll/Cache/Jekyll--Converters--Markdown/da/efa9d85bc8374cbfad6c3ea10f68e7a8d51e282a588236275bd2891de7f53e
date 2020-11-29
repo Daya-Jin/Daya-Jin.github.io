@@ -1,0 +1,12 @@
+I"<ul id="markdown-toc">
+  <li><a href="#分支系统" id="markdown-toc-分支系统">分支系统</a></li>
+</ul>
+
+<h2 id="分支系统">分支系统</h2>
+
+\[\begin{aligned}
+    \argmin_{\theta}\ &amp;J(\theta) \\
+    s.t.\ &amp;cond1 \\
+    &amp;cond2 \\
+\end{aligned}\]
+:ET

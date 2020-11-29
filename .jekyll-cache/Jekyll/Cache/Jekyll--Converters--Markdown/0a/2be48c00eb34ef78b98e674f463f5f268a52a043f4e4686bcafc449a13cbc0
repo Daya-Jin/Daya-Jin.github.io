@@ -1,0 +1,27 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#分支系统" id="markdown-toc-分支系统">分支系统</a></li>
+  <li><a href="#gitignore" id="markdown-toc-gitignore">gitignore</a></li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">git clone [URL]</code>：拉取仓库</p>
+
+<p><code class="language-plaintext highlighter-rouge">git init</code>：当前目录创建git仓库</p>
+
+<p><code class="language-plaintext highlighter-rouge">git add [file]</code>：追踪文件，或者将文件放到暂存区</p>
+
+<p><code class="language-plaintext highlighter-rouge">git status</code>：查看仓库的文件状态</p>
+
+<p><code class="language-plaintext highlighter-rouge">git commit -m [string]</code>：提交</p>
+
+<p><code class="language-plaintext highlighter-rouge">git log</code>：日志</p>
+
+<p><code class="language-plaintext highlighter-rouge">git checkout -- [file]</code>：忽略文件的所有修改</p>
+
+<p><code class="language-plaintext highlighter-rouge">git checkout [branch]</code>：切换分支</p>
+
+<h2 id="分支系统">分支系统</h2>
+
+<h2 id="gitignore">gitignore</h2>
+
+<p><code class="language-plaintext highlighter-rouge">.gitignore</code>支持简单的正则匹配。</p>
+:ET
