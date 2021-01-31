@@ -1,11 +1,0 @@
-I"<ul id="markdown-toc">
-  <li><a href="#分支系统" id="markdown-toc-分支系统">分支系统</a></li>
-</ul>
-
-<h2 id="分支系统">分支系统</h2>
-
-\[\begin{aligned}
-    \arg\min_{\theta}\ J(\theta)&amp;=\sum^{n}(y-\hat{y})^{2} \\
-    &amp;=\sum^{n}(y-kx-b)^{2}
-\end{aligned}\]
-:ET

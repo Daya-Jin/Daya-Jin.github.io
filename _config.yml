@@ -61,4 +61,4 @@ excerpt_separator: "\n\n"
 # paginate
 plugins: [jekyll-paginate]
 paginate: 10           # 每页文章数
-port: 4000
+port: 4001

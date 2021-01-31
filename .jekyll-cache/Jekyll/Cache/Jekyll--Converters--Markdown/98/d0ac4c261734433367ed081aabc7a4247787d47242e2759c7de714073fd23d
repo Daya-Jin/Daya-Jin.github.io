@@ -1,4 +1,4 @@
-I"�#<ul id="markdown-toc">
+I"'$<ul id="markdown-toc">
   <li><a href="#basic" id="markdown-toc-basic">Basic</a></li>
   <li><a href="#黏包" id="markdown-toc-黏包">黏包</a></li>
   <li><a href="#struct" id="markdown-toc-struct">Struct</a></li>
@@ -36,7 +36,7 @@
 </span><span class="n">PORT</span> <span class="o">=</span> <span class="mi">50007</span>  <span class="c1"># The same port as used by the server
 </span><span class="k">with</span> <span class="n">socket</span><span class="p">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="p">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="p">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
     <span class="n">s</span><span class="p">.</span><span class="n">connect</span><span class="p">((</span><span class="n">HOST</span><span class="p">,</span> <span class="n">PORT</span><span class="p">))</span>
-    <span class="n">s</span><span class="p">.</span><span class="n">sendall</span><span class="p">(</span><span class="s">b'Hello, world'</span><span class="p">)</span>    <span class="c1"># 发送所有数据(字节流)
+    <span class="n">s</span><span class="p">.</span><span class="n">sendall</span><span class="p">(</span><span class="sa">b</span><span class="s">'Hello, world'</span><span class="p">)</span>    <span class="c1"># 发送所有数据(字节流)
 </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>    <span class="c1"># 字节流
 </span>    <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
 <span class="k">print</span><span class="p">(</span><span class="s">'Received'</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>    <span class="c1"># 字节流转字串
@@ -68,7 +68,7 @@
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">struct</span>
 
-<span class="n">data</span> <span class="o">=</span> <span class="s">b'</span><span class="se">\x08\x00\x4c\x60\x00\x01\x00\xfb</span><span class="s">'</span>
+<span class="n">data</span> <span class="o">=</span> <span class="sa">b</span><span class="s">'</span><span class="se">\x08\x00\x4c\x60\x00\x01\x00\xfb</span><span class="s">'</span>
 <span class="k">print</span><span class="p">(</span><span class="n">struct</span><span class="p">.</span><span class="n">unpack</span><span class="p">(</span><span class="s">'!BBHHH'</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>    <span class="c1"># (8, 0, 19552, 1, 251)
 </span></code></pre></div></div>
 

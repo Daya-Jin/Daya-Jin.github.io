@@ -1,4 +1,4 @@
-I"k4<ul id="markdown-toc">
+I"ƒ4<ul id="markdown-toc">
   <li><a href="#icmp" id="markdown-toc-icmp">ICMP</a></li>
   <li><a href="#ping" id="markdown-toc-ping">Ping</a></li>
 </ul>
@@ -36,7 +36,7 @@
 </span><span class="n">checksum</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Checksum
 </span><span class="nb">id</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># ID: '\x00\x01'
 </span><span class="n">seq</span> <span class="o">=</span> <span class="mi">251</span>  <span class="c1"># Sequence: '\x00\xfb'
-</span><span class="n">body</span> <span class="o">=</span> <span class="s">b"abcdefghijklmnopqrstuvwabcdefghi"</span>  <span class="c1"># Data
+</span><span class="n">body</span> <span class="o">=</span> <span class="sa">b</span><span class="s">"abcdefghijklmnopqrstuvwabcdefghi"</span>  <span class="c1"># Data
 </span><span class="n">icmp_msg</span> <span class="o">=</span> <span class="n">struct</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="s">'!BBHHH32s'</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">seq</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
 </code></pre></div></div>
 
